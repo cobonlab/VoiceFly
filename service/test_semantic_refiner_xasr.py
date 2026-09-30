@@ -96,7 +96,7 @@ class StableFileFingerprintTests(unittest.TestCase):
             link = root / "link.bin"
             link.symlink_to(target)
 
-            with self.assertRaises(XASR.VoiceFlypyXASRLoadError) as raised:
+            with self.assertRaises(XASR.VoiceFlyXASRLoadError) as raised:
                 XASR._stable_file_fingerprint(link)
 
         self.assertEqual(raised.exception.code, "x_asr_identity_read_failed")
@@ -252,8 +252,8 @@ class ProviderTests(unittest.TestCase):
             apply_engineering_symbols=apply_engineering_symbols,
             load_spoken_number_exceptions=load_spoken_number_exceptions,
             readonly_environment={
-                "VOICEFLYPY_BPE_VOCAB": str(bpe),
-                "VOICEFLYPY_COMBINED_HOTWORDS": str(hotwords),
+                "VOICEFLY_BPE_VOCAB": str(bpe),
+                "VOICEFLY_COMBINED_HOTWORDS": str(hotwords),
             },
             normalization_loggers=normalization_loggers,
             normalization_memory_only=normalization_memory_only,
@@ -270,7 +270,7 @@ class ProviderTests(unittest.TestCase):
         normalizer = mock.Mock(return_value="\u5df2\u5f52\u4e00")
         with tempfile.TemporaryDirectory() as directory:
             service, factory, captured = self.make_service(Path(directory), recognizer)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 normalizer=normalizer,
@@ -379,7 +379,7 @@ class ProviderTests(unittest.TestCase):
                 recognizer,
                 joiner=joiner,
             )
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 normalizer=normalizer,
@@ -415,7 +415,7 @@ class ProviderTests(unittest.TestCase):
             root = Path(directory)
             service, factory, _ = self.make_service(root, recognizer)
             before = snapshot_tree(root)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
@@ -458,7 +458,7 @@ class ProviderTests(unittest.TestCase):
                 recognizer,
                 service_normalizer=production_normalizer,
             )
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
@@ -490,12 +490,12 @@ class ProviderTests(unittest.TestCase):
         recognizer = ScriptedRecognizer(["\u7ed3\u679c"], [False])
         with tempfile.TemporaryDirectory() as directory:
             service, factory, captured = self.make_service(Path(directory), recognizer)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
             )
-            with self.assertRaises(XASR.VoiceFlypyXASRStreamError) as raised:
+            with self.assertRaises(XASR.VoiceFlyXASRStreamError) as raised:
                 provider.transcribe(
                     AudioSnapshot(np.zeros(1600, dtype=np.float32), 16_000),
                     sample_id="not-prepared",
@@ -547,13 +547,13 @@ class ProviderTests(unittest.TestCase):
                 recognizer,
                 service_normalizer=fallback_normalizer,
             )
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
             )
             provider.prepare()
-            with self.assertRaises(XASR.VoiceFlypyXASRStreamError) as caught:
+            with self.assertRaises(XASR.VoiceFlyXASRStreamError) as caught:
                 provider.transcribe(
                     AudioSnapshot(np.zeros(1600, dtype=np.float32), 16_000),
                     sample_id="quiet",
@@ -621,14 +621,14 @@ class ProviderTests(unittest.TestCase):
         recognizer = ScriptedRecognizer(["结果"], [False])
         with tempfile.TemporaryDirectory() as directory:
             service, factory, _ = self.make_service(Path(directory), recognizer)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
             )
             provider.prepare()
             service.voice_tool_state["spoken"] = ("变更后的例外",)
-            with self.assertRaises(XASR.VoiceFlypyXASRStreamError) as raised:
+            with self.assertRaises(XASR.VoiceFlyXASRStreamError) as raised:
                 provider.transcribe(
                     AudioSnapshot(np.zeros(1600, dtype=np.float32), 16_000),
                     sample_id="private-sample",
@@ -669,14 +669,14 @@ class ProviderTests(unittest.TestCase):
                         service_normalizer=mutating_normalizer,
                     )
                     holder["service"] = service
-                    provider = XASR.VoiceFlypyXASRProvider(
+                    provider = XASR.VoiceFlyXASRProvider(
                         service_module=service,
                         recognizer_factory=factory,
                         environment=service.readonly_environment,
                     )
                     provider.prepare()
                     with self.assertRaises(
-                        XASR.VoiceFlypyXASRStreamError
+                        XASR.VoiceFlyXASRStreamError
                     ) as raised:
                         provider.transcribe(
                             AudioSnapshot(
@@ -695,7 +695,7 @@ class ProviderTests(unittest.TestCase):
 
     def test_normalization_resource_identity_rejects_unbounded_entry_count(self):
         entries = [""] * (XASR._MAX_NORMALIZATION_RESOURCE_ENTRIES + 1)
-        with self.assertRaises(XASR.VoiceFlypyXASRLoadError) as raised:
+        with self.assertRaises(XASR.VoiceFlyXASRLoadError) as raised:
             XASR._semantic_resource_identity(
                 "spoken_number_exceptions",
                 entries,
@@ -708,7 +708,7 @@ class ProviderTests(unittest.TestCase):
         oversized = "x" * (
             XASR._MAX_NORMALIZATION_RESOURCE_IDENTITY_BYTES + 1
         )
-        with self.assertRaises(XASR.VoiceFlypyXASRLoadError) as oversized_raised:
+        with self.assertRaises(XASR.VoiceFlyXASRLoadError) as oversized_raised:
             XASR._semantic_resource_identity(
                 "spoken_number_exceptions",
                 [oversized],
@@ -747,7 +747,7 @@ class ProviderTests(unittest.TestCase):
                 recognizer,
                 service_normalizer=blocking_production,
             )
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
@@ -788,7 +788,7 @@ class ProviderTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             service, factory, _ = self.make_service(Path(directory), recognizer)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 normalizer=blocking_normalizer,
@@ -841,7 +841,7 @@ class ProviderTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as directory:
             service, factory, _ = self.make_service(Path(directory), recognizer)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
@@ -877,7 +877,7 @@ class ProviderTests(unittest.TestCase):
                 recognizer,
                 factory=factory,
             )
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
@@ -908,12 +908,12 @@ class ProviderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             service, _, _ = self.make_service(Path(directory), recognizer)
             original_size = (service.MODEL_DIR / "encoder.int8.onnx").stat().st_size
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=mutating_factory,
                 environment=service.readonly_environment,
             )
-            with self.assertRaises(XASR.VoiceFlypyXASRLoadError) as raised:
+            with self.assertRaises(XASR.VoiceFlyXASRLoadError) as raised:
                 provider._ensure_loaded()
             rewritten_size = (service.MODEL_DIR / "encoder.int8.onnx").stat().st_size
 
@@ -935,12 +935,12 @@ class ProviderTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             service, _, _ = self.make_service(Path(directory), recognizer)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=mutating_factory,
                 environment=service.readonly_environment,
             )
-            with self.assertRaises(XASR.VoiceFlypyXASRLoadError) as raised:
+            with self.assertRaises(XASR.VoiceFlyXASRLoadError) as raised:
                 provider.prepare()
 
         self.assertEqual(raised.exception.code, "x_asr_decoder_changed_during_load")
@@ -958,12 +958,12 @@ class ProviderTests(unittest.TestCase):
                 return original_snapshot
 
             service.load_inline_hotword_snapshot.side_effect = mutating_snapshot
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
             )
-            with self.assertRaises(XASR.VoiceFlypyXASRLoadError) as raised:
+            with self.assertRaises(XASR.VoiceFlyXASRLoadError) as raised:
                 provider.prepare()
 
         self.assertEqual(
@@ -987,7 +987,7 @@ class ProviderTests(unittest.TestCase):
             recognizer = ScriptedRecognizer(["\u7ed3\u679c"], [False])
             service, factory, _ = self.make_service(root, recognizer)
             bpe_path = Path(
-                service.readonly_environment["VOICEFLYPY_BPE_VOCAB"]
+                service.readonly_environment["VOICEFLY_BPE_VOCAB"]
             )
             bpe_path.write_text(
                 "".join(
@@ -998,7 +998,7 @@ class ProviderTests(unittest.TestCase):
             )
             hotword_data = hotword_rows[index].encode("utf-8")
             hotword_path = Path(
-                service.readonly_environment["VOICEFLYPY_COMBINED_HOTWORDS"]
+                service.readonly_environment["VOICEFLY_COMBINED_HOTWORDS"]
             )
             hotword_path.write_bytes(hotword_data)
             service.load_inline_hotword_snapshot.return_value = (
@@ -1012,7 +1012,7 @@ class ProviderTests(unittest.TestCase):
             private_phrase = f"私密词条-{root}"
             private_phrases.append(private_phrase)
             service.voice_tool_state["spoken"] = (private_phrase,)
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
@@ -1083,12 +1083,12 @@ class ProviderTests(unittest.TestCase):
             service, factory, captured = self.make_service(root, recognizer)
             for name in XASR.REQUIRED_MODEL_FILES:
                 (service.MODEL_DIR / name).unlink()
-            provider = XASR.VoiceFlypyXASRProvider(
+            provider = XASR.VoiceFlyXASRProvider(
                 service_module=service,
                 recognizer_factory=factory,
                 environment=service.readonly_environment,
             )
-            with self.assertRaises(XASR.VoiceFlypyXASRLoadError) as raised:
+            with self.assertRaises(XASR.VoiceFlyXASRLoadError) as raised:
                 provider.prepare()
 
         self.assertEqual(raised.exception.code, "x_asr_model_files_missing")

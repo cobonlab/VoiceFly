@@ -8,7 +8,7 @@ from unittest import mock
 
 import numpy as np
 
-import voice_flypy_service as SERVICE
+import voice_fly_service as SERVICE
 import voice_refiner as REFINER
 
 

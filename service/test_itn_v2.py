@@ -8,13 +8,13 @@ from unittest import mock
 
 from itn.chinese.inverse_normalizer import InverseNormalizer
 
-import voice_flypy_service as service
+import voice_fly_service as service
 
 
 class ConservativeItnIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.cache_dir = tempfile.TemporaryDirectory(prefix="voiceflypy-itn-v2-test-")
+        cls.cache_dir = tempfile.TemporaryDirectory(prefix="voicefly-itn-v2-test-")
         cls.itn = InverseNormalizer(
             cache_dir=cls.cache_dir.name,
             enable_0_to_9=False,
@@ -370,7 +370,7 @@ class ConservativeItnFailureTests(unittest.TestCase):
                 for path in paths
             }
 
-        with tempfile.TemporaryDirectory(prefix="voiceflypy-no-itn-cache-") as directory:
+        with tempfile.TemporaryDirectory(prefix="voicefly-no-itn-cache-") as directory:
             monitored_cache = Path(directory) / "must-stay-readonly"
             monitored_cache.mkdir()
             (monitored_cache / "existing.marker").write_bytes(b"unchanged")

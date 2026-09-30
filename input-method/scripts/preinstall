@@ -9,11 +9,11 @@ else
     input_methods_root="${install_volume%/}/Library/Input Methods"
 fi
 
-voiceflypy_app="${input_methods_root}/VoiceFlypy.app"
-voiceflypy_executable="${voiceflypy_app}/Contents/MacOS/Squirrel"
+voicefly_app="${input_methods_root}/VoiceFly.app"
+voicefly_executable="${voicefly_app}/Contents/MacOS/VoiceFlyInput"
 
-running_voiceflypy_pids() {
-    /bin/ps -axo pid=,command= | /usr/bin/awk -v executable="${voiceflypy_executable}" '
+running_voicefly_pids() {
+    /bin/ps -axo pid=,command= | /usr/bin/awk -v executable="${voicefly_executable}" '
         {
             pid = $1
             sub(/^[[:space:]]*[0-9]+[[:space:]]+/, "", $0)
@@ -24,31 +24,31 @@ running_voiceflypy_pids() {
     '
 }
 
-remaining_pids="$(running_voiceflypy_pids)"
-if [ -L "${voiceflypy_app}" ]; then
-    echo >&2 "ERROR: refusing to replace a symlinked VoiceFlypy.app: ${voiceflypy_app}"
+remaining_pids="$(running_voicefly_pids)"
+if [ -L "${voicefly_app}" ]; then
+    echo >&2 "ERROR: refusing to replace a symlinked VoiceFly.app: ${voicefly_app}"
     exit 1
 fi
-if [ ! -x "${voiceflypy_executable}" ]; then
+if [ ! -x "${voicefly_executable}" ]; then
     if [ -n "${remaining_pids}" ]; then
-        echo >&2 "ERROR: VoiceFlypy is running but its bundle-scoped quit executable is unavailable: ${voiceflypy_executable}"
+        echo >&2 "ERROR: VoiceFly is running but its bundle-scoped quit executable is unavailable: ${voicefly_executable}"
         echo >&2 "Running PIDs: ${remaining_pids}"
         exit 1
     fi
-    if [ -e "${voiceflypy_app}" ]; then
-        echo >&2 "ERROR: refusing to replace an invalid VoiceFlypy.app: ${voiceflypy_app}"
+    if [ -e "${voicefly_app}" ]; then
+        echo >&2 "ERROR: refusing to replace an invalid VoiceFly.app: ${voicefly_app}"
         exit 1
     fi
     exit 0
 fi
 
-installed_plist="${voiceflypy_app}/Contents/Info.plist"
+installed_plist="${voicefly_app}/Contents/Info.plist"
 if ! installed_bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${installed_plist}" 2>/dev/null)"; then
-    echo >&2 "ERROR: refusing to replace an app with unreadable identity at ${voiceflypy_app}."
+    echo >&2 "ERROR: refusing to replace an app with unreadable identity at ${voicefly_app}."
     exit 1
 fi
-if [ "${installed_bundle_identifier}" != 'com.simonli.inputmethod.VoiceFlypy' ]; then
-    echo >&2 "ERROR: refusing to invoke --quit or replace unexpected bundle ${installed_bundle_identifier} at ${voiceflypy_app}."
+if [ "${installed_bundle_identifier}" != 'com.simonli.inputmethod.VoiceFly' ]; then
+    echo >&2 "ERROR: refusing to invoke --quit or replace unexpected bundle ${installed_bundle_identifier} at ${voicefly_app}."
     exit 1
 fi
 
@@ -57,7 +57,7 @@ if [ -z "${login_user}" ] || [ "${login_user}" = root ] || [ "${login_user}" = l
     if [ -z "${remaining_pids}" ]; then
         exit 0
     fi
-    echo >&2 "ERROR: cannot identify the logged-in user required to quit VoiceFlypy safely."
+    echo >&2 "ERROR: cannot identify the logged-in user required to quit VoiceFly safely."
     exit 1
 fi
 
@@ -65,23 +65,23 @@ fi
 # The process-list check below is a second, independent replacement gate.
 current_user="$(/usr/bin/id -un)"
 if [ "${current_user}" = "${login_user}" ]; then
-    "${voiceflypy_executable}" --quit
+    "${voicefly_executable}" --quit
 elif [ "$(/usr/bin/id -u)" = 0 ]; then
-    /usr/bin/sudo -u "${login_user}" "${voiceflypy_executable}" --quit
+    /usr/bin/sudo -u "${login_user}" "${voicefly_executable}" --quit
 else
-    echo >&2 "ERROR: install must run as ${login_user} or root to quit VoiceFlypy safely."
+    echo >&2 "ERROR: install must run as ${login_user} or root to quit VoiceFly safely."
     exit 1
 fi
 
 for ((attempt = 0; attempt < 50; attempt += 1)); do
-    remaining_pids="$(running_voiceflypy_pids)"
+    remaining_pids="$(running_voicefly_pids)"
     if [ -z "${remaining_pids}" ]; then
-        echo "VoiceFlypy exited cleanly before replacement."
+        echo "VoiceFly exited cleanly before replacement."
         exit 0
     fi
     /bin/sleep 0.1
 done
 
-echo >&2 "ERROR: VoiceFlypy did not exit; refusing to replace the running bundle."
+echo >&2 "ERROR: VoiceFly did not exit; refusing to replace the running bundle."
 echo >&2 "Running PIDs: ${remaining_pids}"
 exit 1

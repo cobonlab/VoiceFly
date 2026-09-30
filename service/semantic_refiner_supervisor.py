@@ -37,8 +37,8 @@ from semantic_refiner_protocol_v1 import (
 
 
 SCHEMA_VERSION = 1
-SUPERVISOR_NAME = "voiceflypy_semantic_refiner_supervisor"
-EVALUATION_NAME = "voiceflypy_semantic_refiner_ab"
+SUPERVISOR_NAME = "voicefly_semantic_refiner_supervisor"
+EVALUATION_NAME = "voicefly_semantic_refiner_ab"
 
 RSS_LIMIT_BYTES = 5 * 1024**3 // 2
 SWAP_GROWTH_LIMIT_BYTES = 512 * 1024**2
@@ -79,7 +79,7 @@ _SAFE_FAILURE_CODES = frozenset(
     }
 )
 _SHA256_HEX = frozenset("0123456789abcdef")
-_BASELINE_PROVIDER_NAME = "voiceflypy_x_asr"
+_BASELINE_PROVIDER_NAME = "voicefly_x_asr"
 _CANDIDATE_PROVIDER_NAMES = frozenset(
     {"paraformer", "sense_voice", "qwen3_asr"}
 )
@@ -308,7 +308,7 @@ class _DispatchMemoryPressureMonitor:
                 library,
                 "_dispatch_source_type_memorypressure",
             )
-            queue = queue_create(b"voiceflypy.semantic-refiner.pressure", None)
+            queue = queue_create(b"voicefly.semantic-refiner.pressure", None)
             if not queue:
                 raise MonitorUnavailableError("queue_create_failed")
             source = source_create(

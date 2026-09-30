@@ -173,7 +173,7 @@ class HotwordConfigTests(unittest.TestCase):
     def test_static_and_learned_phrase_files_are_independent_merge_sources(self):
         self.valid_resources()
         static = self.live / "custom_phrase.txt"
-        learned = self.live / "voiceflypy_learned_phrases.txt"
+        learned = self.live / "voicefly_learned_phrases.txt"
         combined = self.live / "separate-sources-combined.txt"
         static.write_text("静态词\tjktyci\t100\n", encoding="utf-8")
         learned.write_text("刚学会\tghxthv\t200\n", encoding="utf-8")
@@ -192,7 +192,7 @@ class HotwordConfigTests(unittest.TestCase):
 
     def test_two_column_learned_phrase_uses_explicit_default_weight(self):
         self.valid_resources()
-        learned = self.live / "voiceflypy_learned_phrases.txt"
+        learned = self.live / "voicefly_learned_phrases.txt"
         combined = self.live / "two-column-combined.txt"
         learned.write_text("两列词\tldlci\n", encoding="utf-8")
 
@@ -208,7 +208,7 @@ class HotwordConfigTests(unittest.TestCase):
 
     def test_invalid_learned_phrase_code_is_reported_and_old_generation_survives(self):
         self.valid_resources()
-        learned = self.live / "voiceflypy_learned_phrases.txt"
+        learned = self.live / "voicefly_learned_phrases.txt"
         combined = self.live / "invalid-learned-combined.txt"
         write_hotwords(combined, "旧 学 词 :3\n")
         learned.write_text("坏编码\t!!!\t200\n", encoding="utf-8")
@@ -225,7 +225,7 @@ class HotwordConfigTests(unittest.TestCase):
 
     def test_learned_phrase_length_matches_swift_store_contract(self):
         self.valid_resources()
-        learned = self.live / "voiceflypy_learned_phrases.txt"
+        learned = self.live / "voicefly_learned_phrases.txt"
         learned.write_text("超过十二个汉字长度的学习词条\tabcdefghijkl\t200\n", encoding="utf-8")
         config = self.resolve({LEARNED_PHRASES_ENV: str(learned)})
         self.assertIsNotNone(config.resource_error)
@@ -235,12 +235,11 @@ class HotwordConfigTests(unittest.TestCase):
         fake_home = Path(self.tempdir.name) / "home"
         live = (
             fake_home
-            / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync"
-            / "VoiceFlypyLexicon"
+            / "Library/Application Support/VoiceFly/Lexicon"
         )
         write_vocab(self.model / "bpe.vocab")
         write_hotwords(live / "hotwords.txt")
-        learned = fake_home / "Library/Rime-VoiceFlypy/voiceflypy_learned_phrases.txt"
+        learned = fake_home / "Library/Rime-VoiceFly/voicefly_learned_phrases.txt"
         learned.parent.mkdir(parents=True, exist_ok=True)
         learned.write_text("默认学习\tmrxhxt\t200\n", encoding="utf-8")
 
@@ -259,14 +258,13 @@ class HotwordConfigTests(unittest.TestCase):
         fake_home = Path(self.tempdir.name) / "home"
         live = (
             fake_home
-            / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync"
-            / "VoiceFlypyLexicon"
+            / "Library/Application Support/VoiceFly/Lexicon"
         )
         write_vocab(self.model / "bpe.vocab")
         write_hotwords(live / "hotwords.txt")
         runtime = (
             fake_home
-            / "Library/Application Support/VoiceFlypy/Lexicon/personal_usage.json"
+            / "Library/Application Support/VoiceFly/Lexicon/personal_usage.json"
         )
         runtime.parent.mkdir(parents=True, exist_ok=True)
         runtime.write_text(
@@ -277,7 +275,8 @@ class HotwordConfigTests(unittest.TestCase):
         )
         # A directory at the old cloud-ledger path proves the service no longer
         # even attempts to consume that runtime-unsafe location.
-        (live / "personal_usage.json").mkdir()
+        cloud_ledger = fake_home / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync/VoiceFlyLexicon/personal_usage.json"
+        cloud_ledger.mkdir(parents=True)
 
         with mock.patch.object(Path, "home", return_value=fake_home):
             config = resolve_decoder_config(
@@ -290,12 +289,11 @@ class HotwordConfigTests(unittest.TestCase):
         self.assertIsNone(config.resource_error)
         self.assertIn("紧 凶 :4", config.hotwords_file.read_text(encoding="utf-8"))
 
-    def test_packaged_symbol_aliases_precede_a_runtime_unsafe_cloud_placeholder(self):
+    def test_packaged_symbol_aliases_precede_a_runtime_unsafe_local_placeholder(self):
         fake_home = Path(self.tempdir.name) / "home"
         live = (
             fake_home
-            / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync"
-            / "VoiceFlypyLexicon"
+            / "Library/Application Support/VoiceFly/Lexicon"
         )
         write_vocab(self.model / "bpe.vocab")
         write_hotwords(live / "hotwords.txt")
@@ -340,16 +338,15 @@ class HotwordConfigTests(unittest.TestCase):
         fake_home = Path(self.tempdir.name) / "home"
         live = (
             fake_home
-            / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync"
-            / "VoiceFlypyLexicon"
+            / "Library/Application Support/VoiceFly/Lexicon"
         )
         write_vocab(self.model / "bpe.vocab")
         write_hotwords(live / "hotwords.txt")
-        rime = fake_home / "Library/Rime-VoiceFlypy"
+        rime = fake_home / "Library/Rime-VoiceFly"
         rime.mkdir(parents=True)
         (rime / "custom_phrase.txt").write_text("静态词\tjtyc\t100\n", encoding="utf-8")
-        (rime / "voiceflypy_learned_phrases.txt").mkdir()
-        combined = fake_home / "Library/Caches/VoiceFlypy/lexicon/combined_hotwords.txt"
+        (rime / "voicefly_learned_phrases.txt").mkdir()
+        combined = fake_home / "Library/Caches/VoiceFly/lexicon/combined_hotwords.txt"
         write_hotwords(combined, "旧 学 词 :3\n")
 
         with mock.patch.object(Path, "home", return_value=fake_home):
@@ -361,7 +358,7 @@ class HotwordConfigTests(unittest.TestCase):
         self.assertEqual(combined.read_text(encoding="utf-8"), "旧 学 词 :3\n")
 
     def test_default_source_stat_permission_error_fails_closed(self):
-        candidate = self.live / "voiceflypy_learned_phrases.txt"
+        candidate = self.live / "voicefly_learned_phrases.txt"
         with mock.patch.object(Path, "lstat", side_effect=PermissionError("denied")):
             with self.assertRaisesRegex(HOTWORDS.PersonalResourceError, "cannot inspect"):
                 HOTWORDS._first_file([candidate], "learned phrase source")
@@ -371,7 +368,7 @@ class HotwordConfigTests(unittest.TestCase):
         combined = self.live / "atomic-combined.txt"
         old_content = "旧 版 :2\n"
         write_hotwords(combined, old_content)
-        learned = self.live / "voiceflypy_learned_phrases.txt"
+        learned = self.live / "voicefly_learned_phrases.txt"
         learned.write_text("新词\txbci\t200\n", encoding="utf-8")
         validated_paths = []
 
@@ -394,7 +391,7 @@ class HotwordConfigTests(unittest.TestCase):
 
     def test_successful_publish_fsyncs_file_and_parent_directory(self):
         self.valid_resources()
-        learned = self.live / "voiceflypy_learned_phrases.txt"
+        learned = self.live / "voicefly_learned_phrases.txt"
         learned.write_text("新词\txbci\t200\n", encoding="utf-8")
         combined = self.live / "durable-combined.txt"
         real_fsync = os.fsync

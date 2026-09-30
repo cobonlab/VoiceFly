@@ -4,16 +4,16 @@
 
 patch:
   # Compile/query the official Luna dictionary plus Voice Fly personal terms.
-  "translator/dictionary": luna_pinyin.voiceflypy
+  "translator/dictionary": luna_pinyin.voicefly
 
   # Keep the existing learned ranking database instead of creating
-  # luna_pinyin.voiceflypy.userdb.  This is intentionally explicit even though
+  # luna_pinyin.voicefly.userdb.  This is intentionally explicit even though
   # librime also derives the language component before the first dot.
   "translator/user_dict": luna_pinyin
 
   # Keep generated profile phrases separate from mutable user learning. The
   # profile publisher owns custom_phrase.txt but must never replace
-  # voiceflypy_learned_phrases.txt.
+  # voicefly_learned_phrases.txt.
   "engine/translators":
     - table_translator@engineering_symbols
     - table_translator@custom_phrase
@@ -24,7 +24,7 @@ patch:
 
   learned_phrases:
     dictionary: ""
-    user_dict: voiceflypy_learned_phrases
+    user_dict: voicefly_learned_phrases
     db_class: stabledb
     # Explicit learning is an exact-match action. Predictive completion here
     # lets a one-key prefix outrank normal typing once initial_quality is 1.

@@ -12,16 +12,16 @@ import InputMethodKit
 
 final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUStandardUserDriverDelegate, UNUserNotificationCenterDelegate {
   static let rimeWikiURL = URL(string: "https://github.com/rime/home/wiki")!
-  static let updateNotificationIdentifier = "VoiceFlypyUpdateNotification"
-  static let notificationIdentifier = "VoiceFlypyNotification"
+  static let updateNotificationIdentifier = "VoiceFlyUpdateNotification"
+  static let notificationIdentifier = "VoiceFlyNotification"
 
   let rimeAPI: RimeApi_stdbool = rime_get_api_stdbool().pointee
   var config: SquirrelConfig?
   var panel: SquirrelPanel?
   var enableNotifications = false
-  var showStatusIcon: Bool = true
+  var showStatusIcon: Bool = false
   var statusItem: NSStatusItem?
-  // VoiceFlypy is a private side-by-side build. Never let Sparkle replace it
+  // VoiceFly is a private side-by-side build. Never let Sparkle replace it
   // with an official Squirrel release that lacks the voice integration.
   let updateController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
   var supportsGentleScheduledUpdateReminders: Bool {
@@ -62,6 +62,9 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
     panel = SquirrelPanel(position: .zero)
     refreshStatusItem()
     addObservers()
+    DistributedNotificationCenter.default().addObserver(
+      forName: Notification.Name("com.simonli.voicefly.settings-changed"), object: nil, queue: .main
+    ) { _ in SquirrelInputController.requestSettingsReload() }
   }
 
   func applicationWillTerminate(_ notification: Notification) {
@@ -98,6 +101,18 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
 
   func openLogFolder() {
     NSWorkspace.shared.open(SquirrelApp.logDir)
+  }
+
+  func openSettings() {
+    let candidates = [
+      FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Voice Fly.app"),
+      URL(fileURLWithPath: "/Applications/Voice Fly.app")
+    ]
+    if let url = candidates.first(where: { FileManager.default.fileExists(atPath: $0.path) }) {
+      NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+    } else {
+      Self.showMessage(msgText: "设置应用尚未安装，请安装新版 Voice Fly 完整组件。")
+    }
   }
 
   func openRimeFolder() {
@@ -146,7 +161,7 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
     createDirIfNotExist(path: SquirrelApp.userDir)
     createDirIfNotExist(path: SquirrelApp.logDir)
     // Expose the log directory to librime plugins.
-    setenv("RIME_LOG_DIR", SquirrelApp.logDir.path(), 1)
+    setenv("RIME_LOG_DIR", SquirrelApp.logDir.path, 1)
     // swiftlint:disable identifier_name
     let notification_handler: @convention(c) (UnsafeMutableRawPointer?, RimeSessionId, UnsafePointer<CChar>?, UnsafePointer<CChar>?) -> Void = notificationHandler
     let context_object = Unmanaged.passUnretained(self).toOpaque()
@@ -155,12 +170,12 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
 
     var squirrelTraits = RimeTraits.rimeStructInit()
     squirrelTraits.setCString(Bundle.main.sharedSupportPath!, to: \.shared_data_dir)
-    squirrelTraits.setCString(SquirrelApp.userDir.path(), to: \.user_data_dir)
-    squirrelTraits.setCString(SquirrelApp.logDir.path(), to: \.log_dir)
+    squirrelTraits.setCString(SquirrelApp.userDir.path, to: \.user_data_dir)
+    squirrelTraits.setCString(SquirrelApp.logDir.path, to: \.log_dir)
     squirrelTraits.setCString("Voice Fly", to: \.distribution_code_name)
     squirrelTraits.setCString("Voice Fly", to: \.distribution_name)
     squirrelTraits.setCString(Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as! String, to: \.distribution_version)
-    squirrelTraits.setCString("rime.voiceflypy", to: \.app_name)
+    squirrelTraits.setCString("rime.voicefly", to: \.app_name)
     rimeAPI.setup(&squirrelTraits)
   }
 
@@ -179,7 +194,7 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
     }
 
     enableNotifications = config!.getString("show_notifications_when") != "never"
-    showStatusIcon = config!.getBool("status_icon/show") ?? true
+    showStatusIcon = config!.getBool("status_icon/show") ?? false
     refreshStatusItem()
     if let panel = panel, let config = self.config {
       panel.load(config: config, forDarkMode: false)
@@ -207,7 +222,7 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
   // Detect repeated launches that may indicate a bad configuration loop.
   func problematicLaunchDetected() -> Bool {
     var detected = false
-    let logFile = FileManager.default.temporaryDirectory.appendingPathComponent("voiceflypy_launch.json", conformingTo: .json)
+    let logFile = FileManager.default.temporaryDirectory.appendingPathComponent("voicefly_launch.json", conformingTo: .json)
     do {
       let archive = try Data(contentsOf: logFile, options: [.uncached])
       let decoder = JSONDecoder()
@@ -238,10 +253,16 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
     center.addObserver(forName: NSWorkspace.willPowerOffNotification, object: nil, queue: nil, using: workspaceWillPowerOff)
 
     let notifCenter = DistributedNotificationCenter.default()
-    notifCenter.addObserver(forName: .init("VoiceFlypyReloadNotification"), object: nil, queue: nil, using: rimeNeedsReload)
-    notifCenter.addObserver(forName: .init("VoiceFlypySyncNotification"), object: nil, queue: nil, using: rimeNeedsSync)
-    notifCenter.addObserver(forName: .init("VoiceFlypyToggleASCIIModeNotification"), object: nil, queue: nil, using: rimeToggleASCIIMode)
-    notifCenter.addObserver(forName: .init("VoiceFlypyGetASCIIModeNotification"), object: nil, queue: nil, using: rimeGetASCIIMode)
+    notifCenter.addObserver(forName: .init("VoiceFlyReloadNotification"), object: nil, queue: nil, using: rimeNeedsReload)
+    notifCenter.addObserver(forName: .init("VoiceFlySyncNotification"), object: nil, queue: nil, using: rimeNeedsSync)
+    notifCenter.addObserver(forName: .init("VoiceFlyToggleASCIIModeNotification"), object: nil, queue: nil, using: rimeToggleASCIIMode)
+    notifCenter.addObserver(forName: .init("VoiceFlyGetASCIIModeNotification"), object: nil, queue: nil, using: rimeGetASCIIMode)
+    notifCenter.addObserver(forName: .init("VoiceFlyCheckConnection"), object: nil, queue: .main) { notification in
+      guard let nonce = notification.object as? String else { return }
+      let connected = SquirrelInputController.hasConnectedInputSession()
+      DistributedNotificationCenter.default().postNotificationName(
+        .init("VoiceFlyConnectionState"), object: nonce, userInfo: ["connected": connected], deliverImmediately: true)
+    }
     // Suspension behavior matters: the default coalescing holds notifications
     // back while the process is inactive, which is exactly the state Squirrel
     // enters when the user switches away — the icon would fail to hide until
@@ -252,7 +273,7 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
   }
 
   func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-    print("VoiceFlypy is quitting.")
+    print("VoiceFly is quitting.")
     if !SquirrelInputController.flushPersonalUsage() {
       print("Learning-store shutdown flush exceeded its bounded deadline; continuing termination.")
     }
@@ -383,7 +404,7 @@ private extension SquirrelApplicationDelegate {
   func updateStatusItemVisibility() {
     guard let statusItem = statusItem else { return }
     let currentInputSourceID = SquirrelInstaller.currentInputSourceID() ?? ""
-    statusItem.isVisible = currentInputSourceID.hasPrefix("com.simonli.inputmethod.VoiceFlypy")
+    statusItem.isVisible = currentInputSourceID.hasPrefix("com.simonli.inputmethod.VoiceFly")
   }
 
   // macOS 26 does not call deactivateServer when the input source is switched
@@ -395,7 +416,7 @@ private extension SquirrelApplicationDelegate {
   // no-op.
   func finalizeStrandedComposition() {
     let currentInputSourceID = SquirrelInstaller.currentInputSourceID() ?? ""
-    guard !currentInputSourceID.hasPrefix("com.simonli.inputmethod.VoiceFlypy") else { return }
+    guard !currentInputSourceID.hasPrefix("com.simonli.inputmethod.VoiceFly") else { return }
     if let inputController = panel?.inputController {
       inputController.deactivateServer(inputController.client())
     }
@@ -447,11 +468,11 @@ private extension SquirrelApplicationDelegate {
 
   func createDirIfNotExist(path: URL) {
     let fileManager = FileManager.default
-    if !fileManager.fileExists(atPath: path.path()) {
+    if !fileManager.fileExists(atPath: path.path) {
       do {
         try fileManager.createDirectory(at: path, withIntermediateDirectories: true)
       } catch {
-        print("Error creating user data directory: \(path.path())")
+        print("Error creating user data directory: \(path.path)")
       }
     }
   }

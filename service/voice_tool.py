@@ -27,11 +27,11 @@ MODEL_DIR = str(
 )
 DOMAIN_DICT = str(
     Path.home()
-    / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync/domain_dict.txt"
+    / "Library/Application Support/VoiceFly/Lexicon/domain_dict.txt"
 )
 LIVE_LEXICON_ROOT = (
     Path.home()
-    / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync/VoiceFlypyLexicon"
+    / "Library/Application Support/VoiceFly/Lexicon"
 )
 MODEL_SCOPE_ID = (
     "sherpa-onnx-x-asr-480ms-streaming-zipformer-transducer-zh-en-punct-"
@@ -53,12 +53,12 @@ class _Candidate:
 
 
 def _domain_dict_candidates():
-    """Prefer Simon's live dictionary, then the snapshot bundled with VoiceFlypy."""
-    explicit = os.environ.get("VOICEFLYPY_DOMAIN_DICT", "").strip()
+    """Prefer Simon's live dictionary, then the snapshot bundled with VoiceFly."""
+    explicit = os.environ.get("VOICEFLY_DOMAIN_DICT", "").strip()
     if explicit:
         yield Path(explicit).expanduser()
     yield Path(DOMAIN_DICT)
-    resource_dir = os.environ.get("VOICEFLYPY_RESOURCE_DIR")
+    resource_dir = os.environ.get("VOICEFLY_RESOURCE_DIR")
     if resource_dir:
         yield Path(resource_dir) / "lexicon" / "domain_dict.txt"
         yield Path(resource_dir) / "domain_dict.txt"
@@ -67,12 +67,12 @@ def _domain_dict_candidates():
 
 def _voice_rules_candidates():
     """Prefer a synchronized generated lexicon, then packaged/source snapshots."""
-    explicit = os.environ.get("VOICEFLYPY_VOICE_RULES_FILE", "").strip()
+    explicit = os.environ.get("VOICEFLY_VOICE_RULES_FILE", "").strip()
     if explicit:
         yield Path(explicit).expanduser()
     yield LIVE_LEXICON_ROOT / "voice_rules.json"
     yield LIVE_LEXICON_ROOT / "voice" / "voice_rules.json"
-    resource_dir = os.environ.get("VOICEFLYPY_RESOURCE_DIR")
+    resource_dir = os.environ.get("VOICEFLY_RESOURCE_DIR")
     if resource_dir:
         yield Path(resource_dir) / "lexicon" / "voice_rules.json"
     source_root = Path(__file__).resolve().parent
@@ -83,12 +83,12 @@ def _voice_rules_candidates():
 
 def _spoken_number_exception_candidates():
     """Return the editable numeric-idiom exception table, preferring live data."""
-    explicit = os.environ.get("VOICEFLYPY_SPOKEN_NUMBER_EXCEPTIONS", "").strip()
+    explicit = os.environ.get("VOICEFLY_SPOKEN_NUMBER_EXCEPTIONS", "").strip()
     if explicit:
         yield Path(explicit).expanduser()
     yield LIVE_LEXICON_ROOT / "spoken_number_exceptions.txt"
     yield LIVE_LEXICON_ROOT / "voice" / "spoken_number_exceptions.txt"
-    resource_dir = os.environ.get("VOICEFLYPY_RESOURCE_DIR")
+    resource_dir = os.environ.get("VOICEFLY_RESOURCE_DIR")
     if resource_dir:
         yield Path(resource_dir) / "lexicon" / "spoken_number_exceptions.txt"
     yield Path(__file__).resolve().parent / "lexicon" / "spoken_number_exceptions.txt"
@@ -96,11 +96,11 @@ def _spoken_number_exception_candidates():
 
 def _engineering_symbol_alias_candidates():
     """Prefer the synchronized symbol vocabulary, then the packaged snapshot."""
-    explicit = os.environ.get("VOICEFLYPY_ENGINEERING_SYMBOL_ALIASES", "").strip()
+    explicit = os.environ.get("VOICEFLY_ENGINEERING_SYMBOL_ALIASES", "").strip()
     if explicit:
         yield Path(explicit).expanduser()
     yield LIVE_LEXICON_ROOT / "engineering_symbol_aliases.tsv"
-    resource_dir = os.environ.get("VOICEFLYPY_RESOURCE_DIR")
+    resource_dir = os.environ.get("VOICEFLY_RESOURCE_DIR")
     if resource_dir:
         yield Path(resource_dir) / "lexicon" / "engineering_symbol_aliases.tsv"
     yield Path(__file__).resolve().parent / "lexicon/data/imports/engineering_symbol_aliases.tsv"
@@ -468,7 +468,7 @@ def _base_rule_enabled(rule):
     if rule.get("_group") == "semantic":
         kind = str(rule.get("kind", ""))
         if kind == "spoken_alias":
-            return os.environ.get("VOICEFLYPY_ENABLE_SPOKEN_ALIASES", "").lower() in {
+            return os.environ.get("VOICEFLY_ENABLE_SPOKEN_ALIASES", "").lower() in {
                 "1",
                 "true",
                 "yes",

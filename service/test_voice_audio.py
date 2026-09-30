@@ -69,11 +69,11 @@ class AudioInputTests(unittest.TestCase):
     def test_canonical_launch_agent_follows_system_default_input(self):
         launch_agent = (
             Path(__file__).resolve().parent
-            / "com.simonli.voiceflypy.service.plist"
+            / "com.simonli.voicefly.service.plist"
         )
         payload = plistlib.loads(launch_agent.read_bytes())
         environment = payload.get("EnvironmentVariables", {})
-        self.assertNotEqual(environment.get("VOICEFLYPY_PREFER_BUILTIN_MIC"), "1")
+        self.assertNotEqual(environment.get("VOICEFLY_PREFER_BUILTIN_MIC"), "1")
 
     def test_default_input_uses_its_native_rate_and_read_size(self):
         candidates = input_device_candidates(DEVICES, (0, 1))

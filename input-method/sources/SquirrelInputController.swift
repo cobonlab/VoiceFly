@@ -11,34 +11,42 @@ final class SquirrelInputController: IMKInputController {
   private static let keyRollOver = 50
   private static let chaiziMarker = "~"
   private static var unknownAppCnt: UInt = 0
-  private static var personalUsageURL: URL {
-    FileManager.default.homeDirectoryForCurrentUser
-      .appendingPathComponent(
-        "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync/VoiceFlypyLexicon",
-        isDirectory: true
-      )
-      .appendingPathComponent("personal_usage.json")
+  private static var personalUsageURL: URL { VoiceFlyPaths().words }
+  private static let personalUsageStore = VoiceFlyPersonalUsageStore(url: personalUsageURL)
+  private static var wordManager: VoiceFlyWordManager {
+    VoiceFlyWordManager(resources: URL(fileURLWithPath: Bundle.main.sharedSupportPath!))
   }
-  private static var personalUsageRuntimeURL: URL {
-    FileManager.default.homeDirectoryForCurrentUser
-      .appendingPathComponent("Library/Application Support/VoiceFlypy/Lexicon", isDirectory: true)
-      .appendingPathComponent("personal_usage.json")
+  private var productSettings = (try? VoiceFlySettingsStore().load()) ?? VoiceFlySettings()
+  private var voiceModifier: NSEvent.ModifierFlags { productSettings.voiceKey == "option" ? .option : .control }
+  static func requestSettingsReload() {
+    learnedPhraseDeployPending = true
+    if let activeController { activeController.deployLearnedPhrasesIfSafe() }
+    else {
+      DispatchQueue.main.async {
+        guard activeController == nil, learnedPhraseDeployPending else { return }
+        learnedPhraseDeployPending = false
+        NSApp.squirrelAppDelegate.deploy()
+      }
+    }
   }
-  private static let personalUsageStore = VoiceFlypyPersonalUsageStore(
-    url: personalUsageURL,
-    mirrorURL: personalUsageRuntimeURL
-  )
-  private static let learnedPhraseStore = VoiceFlypyLearnedPhraseStore(
-    url: SquirrelApp.userDir.appendingPathComponent("voiceflypy_learned_phrases.txt")
+  private static let learnedPhraseStore = VoiceFlyLearnedPhraseStore(
+    url: SquirrelApp.userDir.appendingPathComponent("voicefly_learned_phrases.txt")
   )
   private static let learnedPhraseWriteQueue = DispatchQueue(
-    label: "com.simonli.voiceflypy.learned-phrases",
+    label: "com.simonli.voicefly.learned-phrases",
     qos: .utility
   )
   private static let learnedPhraseWriteGroup = DispatchGroup()
   private static var learnedPhraseDeployPending = false
   private static var learnedPhraseDeployScheduled = false
   private static weak var activeController: SquirrelInputController?
+
+  static func hasConnectedInputSession() -> Bool {
+    guard SquirrelInstaller.currentInputSourceID() == SquirrelInstaller.InputMode.primary.rawValue,
+          let controller = activeController, controller.client != nil,
+          controller.session != 0 else { return false }
+    return controller.rimeAPI.find_session(controller.session)
+  }
 
   private static func recordPersonalUsage(text: String, code: String, explicit: Bool) {
     personalUsageStore.record(text: text, code: code, explicit: explicit)
@@ -83,15 +91,15 @@ final class SquirrelInputController: IMKInputController {
   private var voiceActive = false
   private var voiceStopRequested = false
   private var voiceSessionID = ""
-  private var voicePartialState = VoiceFlypyVoicePartialState()
-  private var voiceHoldReleaseDetector = VoiceFlypyVoiceHoldReleaseDetector()
-  private var phraseLearningJournal = VoiceFlypyPhraseLearningJournal()
+  private var voicePartialState = VoiceFlyVoicePartialState()
+  private var voiceHoldReleaseDetector = VoiceFlyVoiceHoldReleaseDetector()
+  private var phraseLearningJournal = VoiceFlyPhraseLearningJournal()
   private var phraseCommitInputHint: String?
-  private var phraseSpaceGesture = VoiceFlypySpaceGesture()
-  private var recentPhraseCommit = VoiceFlypyRecentCommit()
+  private var phraseSpaceGesture = VoiceFlySpaceGesture()
+  private var recentPhraseCommit = VoiceFlyRecentCommit()
   private var pendingPhraseLearningSpaceTimer: Timer?
   private var phraseLengthSelectionTimer: Timer?
-  private var phraseLengthChoices: [Int: VoiceFlypyPhraseDraft] = [:]
+  private var phraseLengthChoices: [Int: VoiceFlyPhraseDraft] = [:]
   private var chaiziMode = false
   private var chaiziComponents: [String] = []
   private var chaiziResults: [String] = []
@@ -112,17 +120,23 @@ final class SquirrelInputController: IMKInputController {
     }
   }
 
-  private static let voiceStartNotification = Notification.Name("com.simonli.voiceflypy.start")
-  private static let voiceStopNotification = Notification.Name("com.simonli.voiceflypy.stop")
-  private static let voiceStartedNotification = Notification.Name("com.simonli.voiceflypy.started")
-  private static let voiceMicReadyNotification = Notification.Name("com.simonli.voiceflypy.mic-ready")
-  private static let voicePartialNotification = Notification.Name("com.simonli.voiceflypy.partial")
-  private static let voiceFinalNotification = Notification.Name("com.simonli.voiceflypy.final")
-  private static let voiceErrorNotification = Notification.Name("com.simonli.voiceflypy.error")
+  private static let voiceStartNotification = Notification.Name("com.simonli.voicefly.start")
+  private static let voiceStopNotification = Notification.Name("com.simonli.voicefly.stop")
+  private static let voiceStartedNotification = Notification.Name("com.simonli.voicefly.started")
+  private static let voiceMicReadyNotification = Notification.Name("com.simonli.voicefly.mic-ready")
+  private static let voicePartialNotification = Notification.Name("com.simonli.voicefly.partial")
+  private static let voiceFinalNotification = Notification.Name("com.simonli.voicefly.final")
+  private static let voiceErrorNotification = Notification.Name("com.simonli.voicefly.error")
 
   // swiftlint:disable:next cyclomatic_complexity
   override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
     guard let event = event else { return false }
+    if IsSecureEventInputEnabled() {
+      cancelVoiceArm()
+      if voiceActive { cancelVoiceInput(reason: "secure input") }
+      cancelPhraseLearningState()
+      return false
+    }
     let modifiers = event.modifierFlags
     let changes = lastModifiers.symmetricDifference(modifiers)
 
@@ -145,7 +159,7 @@ final class SquirrelInputController: IMKInputController {
         return true
       }
       let isEscape = event.keyCode == 53 || event.charactersIgnoringModifiers?.first == "\u{1b}"
-      if isEscape || VoiceFlypyChaiziInteractionRules.isTildeExit(event.characters?.first) {
+      if isEscape || VoiceFlyChaiziInteractionRules.isTildeExit(event.characters?.first) {
         exitChaiziMode()
         SquirrelApplicationDelegate.showMessage(msgText: "已退出拆字模式")
         deployLearnedPhrasesIfSafe()
@@ -183,13 +197,11 @@ final class SquirrelInputController: IMKInputController {
       // A bare Control hold is the voice key. Delay activation briefly so
       // Control shortcuts (Ctrl-C, Ctrl-[, etc.) keep their normal behavior.
       let shortcutModifiers = modifiers.intersection([.control, .shift, .option, .command])
-      let isBareControl = shortcutModifiers == .control
+      let isBareControl = productSettings.voiceEnabled && shortcutModifiers == voiceModifier
       let wasVoiceArmed = voiceArmed
-      let isExplicitControlRelease = VoiceFlypyVoiceControlEvent.isExplicitRelease(
-        keyCode: Int(event.keyCode),
-        controlFlagChanged: changes.contains(.control),
-        controlIsPresent: modifiers.contains(.control)
-      )
+      let triggerKeys: Set<UInt16> = productSettings.voiceKey == "option" ? [58, 61] : [59, 62]
+      let isExplicitControlRelease = triggerKeys.contains(event.keyCode) &&
+        changes.contains(voiceModifier) && !modifiers.contains(voiceModifier)
 
       // Adding another shortcut modifier must disarm voice even when Control
       // itself did not change in this flagsChanged event.
@@ -197,7 +209,7 @@ final class SquirrelInputController: IMKInputController {
         cancelVoiceArm()
       }
       if voiceActive && !isBareControl {
-        if modifiers.contains(.control) {
+        if modifiers.contains(voiceModifier) {
           cancelVoiceInput(reason: "shortcut modifier added")
         } else if isExplicitControlRelease {
           stopVoiceInput(reason: "physical-control-key-up")
@@ -213,14 +225,14 @@ final class SquirrelInputController: IMKInputController {
         }
       }
 
-      if changes.contains(.control) {
+      if changes.contains(voiceModifier) {
         if isBareControl {
           armVoiceInput(sender)
           lastModifiers = modifiers
           handled = true
           break
         }
-        if !modifiers.contains(.control) {
+        if !modifiers.contains(voiceModifier) {
           if wasVoiceArmed {
             lastModifiers = modifiers
             handled = true
@@ -591,7 +603,7 @@ final class SquirrelInputController: IMKInputController {
     sync.target = self
     let logDir = NSMenuItem(title: NSLocalizedString("Logs...", comment: "Menu item"), action: #selector(openLogFolder), keyEquivalent: "")
     logDir.target = self
-    let setting = NSMenuItem(title: NSLocalizedString("Settings...", comment: "Menu item"), action: #selector(openRimeFolder), keyEquivalent: "")
+    let setting = NSMenuItem(title: NSLocalizedString("Settings...", comment: "Menu item"), action: #selector(openSettings), keyEquivalent: "")
     setting.target = self
     let wiki = NSMenuItem(title: NSLocalizedString("Rime Wiki...", comment: "Menu item"), action: #selector(openWiki), keyEquivalent: "")
     wiki.target = self
@@ -615,6 +627,10 @@ final class SquirrelInputController: IMKInputController {
 
   @objc func openLogFolder() {
     NSApp.squirrelAppDelegate.openLogFolder()
+  }
+
+  @objc func openSettings() {
+    NSApp.squirrelAppDelegate.openSettings()
   }
 
   @objc func openRimeFolder() {
@@ -662,13 +678,14 @@ final class SquirrelInputController: IMKInputController {
 private extension SquirrelInputController {
 
   static func isPhysicalBackspace(_ event: NSEvent) -> Bool {
-    VoiceFlypyChaiziInteractionRules.isPhysicalBackspace(
+    VoiceFlyChaiziInteractionRules.isPhysicalBackspace(
       keyCode: Int(event.keyCode),
       character: event.charactersIgnoringModifiers?.first
     )
   }
 
   func directKeyboardSymbol(from event: NSEvent) -> String? {
+    guard productSettings.directSymbols else { return nil }
     let shortcutModifiers = event.modifierFlags.intersection([.command, .control, .option])
     guard shortcutModifiers.isEmpty,
           let text = event.characters,
@@ -690,11 +707,11 @@ private extension SquirrelInputController {
     voiceLog("arm")
     voiceArmTimer?.invalidate()
     voiceArmed = true
-    let timer = Timer(timeInterval: VoiceFlypyVoiceTiming.armDelay, repeats: false) { [weak self] _ in
+    let timer = Timer(timeInterval: VoiceFlyVoiceTiming.armDelay, repeats: false) { [weak self] _ in
       guard let self = self else { return }
       // flagsChanged releases are occasionally lost by IMK.  Never begin a
       // delayed voice session after the physical Control key is already up.
-      guard Self.physicalControlIsDown else {
+      guard self.physicalVoiceKeyIsDown else {
         self.cancelVoiceArm()
         return
       }
@@ -740,7 +757,7 @@ private extension SquirrelInputController {
     let startedSession = voiceSessionID
     voiceStartWatchdog?.invalidate()
     voiceStartWatchdog = Timer.scheduledTimer(
-      withTimeInterval: VoiceFlypyVoiceTiming.clientStartFallbackTimeout,
+      withTimeInterval: VoiceFlyVoiceTiming.clientStartFallbackTimeout,
       repeats: false
     ) { [weak self] _ in
       guard let self = self,
@@ -825,7 +842,7 @@ private extension SquirrelInputController {
   func startVoiceHoldMonitor() {
     voiceHoldMonitorTimer?.invalidate()
     let timer = Timer(
-      timeInterval: VoiceFlypyVoiceTiming.holdMonitorInterval,
+      timeInterval: VoiceFlyVoiceTiming.holdMonitorInterval,
       repeats: true
     ) { [weak self] _ in
       guard let self = self else { return }
@@ -835,7 +852,7 @@ private extension SquirrelInputController {
         return
       }
       if self.voiceHoldReleaseDetector.shouldStop(
-        controlIsPhysicallyDown: Self.physicalControlIsDown
+        controlIsPhysicallyDown: self.physicalVoiceKeyIsDown
       ) {
         self.voiceLog("sustained physical Control release confirmed; stopping voice session")
         self.stopVoiceInput(reason: "control-state-missing-confirmed")
@@ -845,8 +862,8 @@ private extension SquirrelInputController {
     RunLoop.main.add(timer, forMode: .common)
   }
 
-  static var physicalControlIsDown: Bool {
-    CGEventSource.flagsState(.combinedSessionState).contains(.maskControl)
+  var physicalVoiceKeyIsDown: Bool {
+    CGEventSource.flagsState(.combinedSessionState).contains(productSettings.voiceKey == "option" ? .maskAlternate : .maskControl)
   }
 
   func clearVoiceMarkedText() {
@@ -865,7 +882,7 @@ private extension SquirrelInputController {
 
   func voiceLog(_ message: String) {
     let timestamp = String(format: "%.3f", ProcessInfo.processInfo.systemUptime)
-    let line = "[VoiceFlypy][\(timestamp)] \(message)"
+    let line = "[VoiceFly][\(timestamp)] \(message)"
     print(line)
     NSLog("%@", line)
   }
@@ -968,12 +985,13 @@ private extension SquirrelInputController {
   @objc func handleVoiceError(_ notification: Notification) {
     guard let info = notification.userInfo,
           let incomingSession = info["session"] as? String else { return }
-    let message = info["message"] as? String ?? "unknown service error"
+    let message = info["message"] as? String ?? "语音输入失败，请检查麦克风权限并在设置中重启语音服务。"
     DispatchQueue.main.async { [weak self] in
       guard let self = self,
             self.voiceActive,
             incomingSession == self.voiceSessionID else { return }
-      self.voiceLog("error session=\(incomingSession) message=\(message)")
+      self.voiceLog("service error session=\(incomingSession)")
+      SquirrelApplicationDelegate.showMessage(msgText: message)
       self.resetVoiceSession(clearMarkedText: true)
       self.deployLearnedPhrasesIfSafe()
       NSSound.beep()
@@ -1028,7 +1046,7 @@ private extension SquirrelInputController {
   }
 
   private func handlePhraseLearningSpace() -> Bool {
-    guard !chaiziMode,
+    guard productSettings.spaceLearning, !chaiziMode,
           !rimeAPI.get_option(session, "ascii_mode"),
           let rawInput = rimeAPI.get_input(session),
           String(cString: rawInput).isEmpty else { return false }
@@ -1043,6 +1061,7 @@ private extension SquirrelInputController {
     at now: TimeInterval,
     fallbackSpaces: Int
   ) {
+    guard productSettings.spaceLearning else { return }
     if let startedAt = phraseSpaceGesture.startedAt,
        now - startedAt > phraseSpaceGesture.timeout {
       settlePendingPhraseLearningGesture()
@@ -1083,7 +1102,7 @@ private extension SquirrelInputController {
     recentPhraseCommit.invalidate()
   }
 
-  private func performPhraseLearningActions(_ actions: [VoiceFlypySpaceGestureAction]) {
+  private func performPhraseLearningActions(_ actions: [VoiceFlySpaceGestureAction]) {
     for action in actions {
       switch action {
       case let .insertSpaces(count):
@@ -1240,7 +1259,7 @@ private extension SquirrelInputController {
   private func visiblePhraseLearningDraft(
     exactLength: Int,
     allowRecentFallback: Bool
-  ) -> VoiceFlypyPhraseDraft? {
+  ) -> VoiceFlyPhraseDraft? {
     if let visibleDraft = Self.pinyinLexicon.draft(
       fromVisiblePrefix: visiblePrefixBeforeCaret(),
       exactLength: exactLength,
@@ -1339,7 +1358,7 @@ private extension SquirrelInputController {
       return true
     }
 
-    if VoiceFlypyChaiziInteractionRules.isTildeExit(event.characters?.first) {
+    if VoiceFlyChaiziInteractionRules.isTildeExit(event.characters?.first) {
       exitChaiziMode()
       SquirrelApplicationDelegate.showMessage(msgText: "已退出拆字模式")
       return true
@@ -1432,7 +1451,7 @@ private extension SquirrelInputController {
 
   private func handleChaiziBackspace() {
     let hasRawInput = rimeAPI.get_input(session).map { !String(cString: $0).isEmpty } ?? false
-    let action = VoiceFlypyChaiziInteractionRules.backspaceAction(
+    let action = VoiceFlyChaiziInteractionRules.backspaceAction(
       hasRawInput: hasRawInput,
       componentCount: chaiziComponents.count,
       hasResults: !chaiziResults.isEmpty
@@ -1541,7 +1560,7 @@ private extension SquirrelInputController {
   private func restoreChaiziPresentationAfterRimeUpdate() {
     guard chaiziMode else { return }
     let hasRawInput = rimeAPI.get_input(session).map { !String(cString: $0).isEmpty } ?? false
-    guard VoiceFlypyChaiziInteractionRules.shouldRestoreMarker(
+    guard VoiceFlyChaiziInteractionRules.shouldRestoreMarker(
       isActive: chaiziMode,
       hasRawInput: hasRawInput
     ) else { return }
@@ -1556,20 +1575,25 @@ private extension SquirrelInputController {
     Self.pinyinLexicon.characterReadings
   }
 
-  private static func loadPinyinLexicon() -> VoiceFlypyPinyinLexicon {
-    let url = SquirrelApp.userDir.appendingPathComponent("terra_pinyin.dict.yaml")
-    var result = VoiceFlypyPinyinLexicon()
-    if let content = try? String(contentsOf: url, encoding: .utf8) {
-      for line in content.split(whereSeparator: \.isNewline) where !line.hasPrefix("#") {
-        let fields = line.split(separator: "\t", omittingEmptySubsequences: false)
-        guard fields.count >= 2 else { continue }
-        result.add(text: String(fields[0]), pinyin: String(fields[1]))
+  private static func loadPinyinLexicon() -> VoiceFlyPinyinLexicon {
+    var result = VoiceFlyPinyinLexicon()
+    let files = [
+      SquirrelApp.userDir.appendingPathComponent("terra_pinyin.dict.yaml"),
+      URL(fileURLWithPath: Bundle.main.sharedSupportPath!).appendingPathComponent("pinyin_simp.dict.yaml")
+    ]
+    for url in files {
+      if let content = try? String(contentsOf: url, encoding: .utf8) {
+        for line in content.split(whereSeparator: \.isNewline) where !line.hasPrefix("#") {
+          let fields = line.split(separator: "\t", omittingEmptySubsequences: false)
+          guard fields.count >= 2 else { continue }
+          result.add(text: String(fields[0]), pinyin: String(fields[1]))
+        }
       }
     }
     return result
   }
 
-  private static func loadChaiziIndex() -> VoiceFlypyChaiziIndex {
+  private static func loadChaiziIndex() -> VoiceFlyChaiziIndex {
     let url = SquirrelApp.userDir.appendingPathComponent("chaizi_ids.txt")
     var definitions: [Character: [Character]] = [:]
     if let content = try? String(contentsOf: url, encoding: .utf8) {
@@ -1587,19 +1611,19 @@ private extension SquirrelInputController {
         }
       }
     }
-    return VoiceFlypyChaiziIndex(definitions: definitions)
+    return VoiceFlyChaiziIndex(definitions: definitions)
   }
 
   private func lookupChaizi(components: [String]) -> [String] {
     Self.chaiziIndex.lookup(components: components)
   }
 
-  private func learnPhrase(_ draft: VoiceFlypyPhraseDraft) {
+  private func learnPhrase(_ draft: VoiceFlyPhraseDraft) {
     // Re-read the host immediately before enqueueing the write. The local
     // commit journal is deliberately not an eligibility signal: whole-word or
     // per-character commits, repeated Backspace, paste, undo, and other edit
     // histories all converge on the same final visible suffix.
-    let visibleTextMatches = VoiceFlypyVisiblePhraseExtractor.matchesVisibleSuffix(
+    let visibleTextMatches = VoiceFlyVisiblePhraseExtractor.matchesVisibleSuffix(
       text: draft.text,
       visiblePrefix: visiblePrefixBeforeCaret()
     )
@@ -1621,6 +1645,10 @@ private extension SquirrelInputController {
       do {
         let changed = try Self.learnedPhraseStore.save(phrase: draft.text, code: draft.code)
         Self.recordPersonalUsage(text: draft.text, code: draft.code, explicit: true)
+        guard Self.personalUsageStore.flushSynchronously(timeout: 2) else {
+          throw VoiceFlySettingsError.invalid("个人词库尚未保存")
+        }
+        try Self.wordManager.regenerate()
         DispatchQueue.main.async { [weak self] in
           let status = changed ? "已保存" : "已确认"
           SquirrelApplicationDelegate.showMessage(msgText: "\(status)：\(draft.text)，已排队载入词库")
@@ -1631,7 +1659,7 @@ private extension SquirrelInputController {
           (Self.activeController ?? self)?.deployLearnedPhrasesIfSafe()
         }
       } catch {
-        print("Unable to save learned phrase \(draft.text); original preserved: \(error)")
+        print("Unable to save learned phrase; original preserved.")
         DispatchQueue.main.async {
           SquirrelApplicationDelegate.showMessage(msgText: "学习失败：原词库未改动")
           NSSound.beep()
@@ -1654,7 +1682,7 @@ private extension SquirrelInputController {
     let hasRawInput = hasValidSession && (
       rimeAPI.get_input(session).map { !String(cString: $0).isEmpty } ?? false
     )
-    guard VoiceFlypyLearnedPhraseDeploymentRules.isSafe(
+    guard VoiceFlyLearnedPhraseDeploymentRules.isSafe(
       hasValidSession: hasValidSession,
       voiceArmed: voiceArmed,
       voiceActive: voiceActive,
@@ -1679,7 +1707,7 @@ private extension SquirrelInputController {
             !String(cString: $0).isEmpty
           } ?? false
         )
-        guard VoiceFlypyLearnedPhraseDeploymentRules.isSafe(
+        guard VoiceFlyLearnedPhraseDeploymentRules.isSafe(
           hasValidSession: activeHasValidSession,
           voiceArmed: activeController.voiceArmed,
           voiceActive: activeController.voiceActive,
@@ -1704,6 +1732,12 @@ private extension SquirrelInputController {
     currentApp = app
     session = rimeAPI.create_session()
     schemaId = ""
+    productSettings = (try? VoiceFlySettingsStore().load()) ?? productSettings
+    if session != 0, FileManager.default.fileExists(atPath: VoiceFlyPaths().settings.path) {
+      productSettings.schema.rimeID.withCString { _ = rimeAPI.select_schema(session, $0) }
+      rimeAPI.set_option(session, "simplification", productSettings.simplified)
+      rimeAPI.set_option(session, "full_shape", productSettings.fullShape)
+    }
 
     if session != 0 {
       updateAppOptions()
@@ -1789,15 +1823,15 @@ private extension SquirrelInputController {
         } else {
           let committedCode = phraseLearningJournal.recordCommitted(
             text: value,
-            inputHint: phraseCommitInputHint,
+            inputHint: ["double_pinyin_flypy", "voicefly_flypy"].contains(schemaId) ? phraseCommitInputHint : nil,
             readings: pinyinReadings()
           )
-          if let code = committedCode, (2...12).contains(value.count) {
+          if productSettings.personalLearning, let code = committedCode, (2...12).contains(value.count) {
             Self.recordPersonalUsage(text: value, code: code, explicit: false)
           }
           if let code = committedCode, (2...5).contains(value.count) {
             recentPhraseCommit.record(
-              VoiceFlypyPhraseDraft(text: value, code: code),
+              VoiceFlyPhraseDraft(text: value, code: code),
               at: ProcessInfo.processInfo.systemUptime
             )
           } else if let draft = phraseLearningJournal.draft {
@@ -2009,7 +2043,7 @@ private extension SquirrelInputController {
     let status = isASCIIMode ? "ascii" : "nascii"
 
     DistributedNotificationCenter.default().postNotificationName(
-      .init("VoiceFlypyASCIIModeResponse"),
+      .init("VoiceFlyASCIIModeResponse"),
       object: status
     )
   }

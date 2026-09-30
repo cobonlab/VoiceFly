@@ -1,0 +1,36 @@
+#!/bin/bash
+set -euo pipefail
+state='/Library/Application Support/VoiceFly Appearance Installer'
+user=$(/usr/bin/sed -n '1p' "$state/current")
+user_home=$(/usr/bin/sed -n '2p' "$state/current")
+backup=$(/usr/bin/sed -n '3p' "$state/current")
+uid=$(/usr/bin/id -u "$user")
+user_tmp=$(/usr/bin/sudo -u "$user" /usr/bin/getconf DARWIN_USER_TEMP_DIR)
+as_user() { /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
+front='/Library/Input Methods/VoiceFly.app/Contents/MacOS/VoiceFlyInput'
+rollback() {
+ trap - ERR
+ /bin/mkdir -p "$backup/failed-apps"
+ /bin/mv '/Library/Input Methods/VoiceFly.app' "$backup/failed-apps/input.app" || true
+ /bin/mv '/Applications/Voice Fly.app' "$backup/failed-apps/settings.app" || true
+ /usr/bin/ditto --rsrc --extattr "$backup/input.app" '/Library/Input Methods/VoiceFly.app'
+ /usr/bin/ditto --rsrc --extattr "$backup/settings.app" '/Applications/Voice Fly.app'
+ as_user "$front" --enable-input-source || true
+ as_user /usr/bin/open '/Applications/Voice Fly.app' || true
+ /bin/mv "$state/current" "$backup/failed-appearance-update"
+ /usr/sbin/chown -R "$uid" "$backup"
+ exit 1
+}
+trap rollback ERR
+/usr/bin/codesign --verify --deep --strict '/Library/Input Methods/VoiceFly.app'
+/usr/bin/codesign --verify --deep --strict '/Applications/Voice Fly.app'
+as_user /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f '/Library/Input Methods/VoiceFly.app'
+as_user "$front" --register-input-source
+as_user "$front" --enable-input-source
+# Do not programmatically select: macOS 26 can report success without attaching
+# the input controller. The installer requires logout; use the native menu after login.
+as_user /usr/bin/open '/Library/Input Methods/VoiceFly.app'
+/bin/mv "$state/current" "$backup/completed-appearance-update"
+/usr/sbin/chown -R "$uid" "$backup"
+trap - ERR
+as_user /usr/bin/open '/Applications/Voice Fly.app'

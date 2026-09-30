@@ -1,4 +1,4 @@
-"""Canonical numeric normalization for VoiceFlypy dictation.
+"""Canonical numeric normalization for VoiceFly dictation.
 
 This module is the only owner of spoken-number parsing.  The production
 WeText mapping policy and the command-line compatibility helpers share these

@@ -13,7 +13,7 @@ class BenchmarkPathTests(unittest.TestCase):
         )
 
     def load_benchmark(self):
-        module_name = "voiceflypy_benchmark_hotwords_path_test"
+        module_name = "voicefly_benchmark_hotwords_path_test"
         spec = importlib.util.spec_from_file_location(module_name, self.script)
         self.assertIsNotNone(spec)
         self.assertIsNotNone(spec.loader)

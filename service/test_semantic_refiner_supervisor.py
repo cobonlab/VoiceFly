@@ -48,7 +48,7 @@ def provider_report(name):
 def valid_report():
     return {
         "schema_version": 1,
-        "evaluation": "voiceflypy_semantic_refiner_ab",
+        "evaluation": "voicefly_semantic_refiner_ab",
         "sample_count": 24,
         "privacy": {
             "audio_persisted": False,
@@ -66,7 +66,7 @@ def valid_report():
             "cer": "Unicode NFKC code points with whitespace removed",
             "identifier_exact": "Unicode NFKC with outer/collapsed whitespace",
         },
-        "baseline": provider_report("voiceflypy_x_asr"),
+        "baseline": provider_report("voicefly_x_asr"),
         "second_model": provider_report("qwen3_asr"),
         "comparison": {
             "agreement_count": 24,
@@ -541,7 +541,7 @@ class SupervisorPrimitiveTests(unittest.TestCase):
         wrong_baseline = valid_report()
         wrong_baseline["baseline"]["name"] = "qwen3_asr"
         wrong_candidate = valid_report()
-        wrong_candidate["second_model"]["name"] = "voiceflypy_x_asr"
+        wrong_candidate["second_model"]["name"] = "voicefly_x_asr"
 
         for report in (wrong_baseline, wrong_candidate):
             with self.subTest():

@@ -53,7 +53,7 @@ from voice_refiner import (
 )
 from semantic_refiner_protocol_v1 import (
     ManifestMetadata as ProtocolManifestMetadata,
-    PROTOCOL_VERSION as VOICEFLYPY_PROTOCOL_V1,
+    PROTOCOL_VERSION as VOICEFLY_PROTOCOL_V1,
     ProtocolObservation,
     ProtocolValidationError,
     aggregate_report as aggregate_protocol_v1_report,
@@ -62,7 +62,7 @@ from semantic_refiner_protocol_v1 import (
 
 
 SCHEMA_VERSION = 1
-EVALUATION_NAME = "voiceflypy_semantic_refiner_ab"
+EVALUATION_NAME = "voicefly_semantic_refiner_ab"
 MAX_MANIFEST_BYTES = 8 * 1024 * 1024
 MAX_MANIFEST_LINE_BYTES = 256 * 1024
 MAX_MANIFEST_SAMPLES = 10_000
@@ -75,8 +75,8 @@ MAX_SHERPA_IDENTITY_FILE_BYTES = 8 * 1024 * 1024 * 1024
 _NORMALIZATION_PREWARM_TEXT = "W三五六 温度二十摄氏度"
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _SAFE_RUNTIME_VERSION_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+!-]{0,127}")
-VOICEFLYPY_X_ASR_FAMILY = "voiceflypy_x_asr"
-BASELINE_FAMILIES = frozenset((*SHERPA_OFFLINE_FAMILIES, VOICEFLYPY_X_ASR_FAMILY))
+VOICEFLY_X_ASR_FAMILY = "voicefly_x_asr"
+BASELINE_FAMILIES = frozenset((*SHERPA_OFFLINE_FAMILIES, VOICEFLY_X_ASR_FAMILY))
 _WETEXT_LOGGER_LOCK = threading.Lock()
 _PRIVATE_RESOURCE_IDENTITY_STATUS = "revalidated_not_exported"
 _PRIVATE_NORMALIZATION_IDENTITY_FIELDS = (
@@ -413,9 +413,9 @@ def _sherpa_inference_parameters(
     }
 
 
-def _load_voiceflypy_normalization_service() -> Any:
+def _load_voicefly_normalization_service() -> Any:
     try:
-        service = importlib.import_module("voice_flypy_service")
+        service = importlib.import_module("voice_fly_service")
     except Exception as exc:
         raise EvaluationInputError(
             "sherpa_normalization_service_unavailable"
@@ -503,7 +503,7 @@ def _sherpa_normalization_identity(service: Any) -> dict[str, Any]:
         ):
             raise EvaluationInputError("sherpa_normalization_identity_invalid")
     return {
-        "entrypoint": "voice_flypy_service.normalize",
+        "entrypoint": "voice_fly_service.normalize",
         "itn_policy_version": policy_version,
         "itn_cache_policy": "memory_only",
         "apply_personal_phonetics": True,
@@ -554,7 +554,7 @@ class SherpaTranscriptProvider:
             failure_code="sherpa_model_layout_invalid",
         )
         service = (
-            _load_voiceflypy_normalization_service()
+            _load_voicefly_normalization_service()
             if normalization_service is None
             else normalization_service
         )
@@ -760,10 +760,10 @@ def make_sherpa_provider(spec: BackendSpec) -> TranscriptProvider:
 
 def make_provider(spec: BackendSpec) -> TranscriptProvider:
     """Build an allowed provider without importing the live service eagerly."""
-    if spec.family == VOICEFLYPY_X_ASR_FAMILY:
-        from semantic_refiner_xasr import VoiceFlypyXASRProvider
+    if spec.family == VOICEFLY_X_ASR_FAMILY:
+        from semantic_refiner_xasr import VoiceFlyXASRProvider
 
-        return VoiceFlypyXASRProvider()
+        return VoiceFlyXASRProvider()
     return make_sherpa_provider(spec)
 
 
@@ -1416,7 +1416,7 @@ def _validate_protocol_samples(
 ) -> None:
     if protocol is None:
         return
-    if protocol != VOICEFLYPY_PROTOCOL_V1:
+    if protocol != VOICEFLY_PROTOCOL_V1:
         raise EvaluationInputError("evaluation_protocol_unsupported")
     if any(not sample.tags_json_list for sample in samples):
         raise EvaluationInputError("protocol_v1_tags_type_invalid")
@@ -1505,7 +1505,7 @@ def evaluate_samples(
         baseline_failed += baseline.text is None
         second_successful += second.text is not None
         second_failed += second.text is None
-        if protocol == VOICEFLYPY_PROTOCOL_V1:
+        if protocol == VOICEFLY_PROTOCOL_V1:
             protocol_observations.append(
                 ProtocolObservation(
                     sample_id=sample.sample_id,
@@ -1643,7 +1643,7 @@ def evaluate_samples(
         "error_count": len(error_details),
         "errors": error_details,
     }
-    if protocol == VOICEFLYPY_PROTOCOL_V1:
+    if protocol == VOICEFLY_PROTOCOL_V1:
         try:
             report["quality_protocol"] = aggregate_protocol_v1_report(
                 protocol_observations
@@ -1667,7 +1667,7 @@ def run_evaluation(
         raise EvaluationInputError("baseline_family_unsupported")
     if config.second_model.family not in SHERPA_OFFLINE_FAMILIES:
         raise EvaluationInputError("second_family_must_be_offline")
-    if config.baseline.family == VOICEFLYPY_X_ASR_FAMILY:
+    if config.baseline.family == VOICEFLY_X_ASR_FAMILY:
         if config.baseline.model_dir is not None:
             raise EvaluationInputError("x_asr_model_dir_override_forbidden")
     elif config.baseline.model_dir is None:
@@ -1705,7 +1705,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         allow_abbrev=False,
         description=(
-            "Read-only A/B evaluation of VoiceFlypy's production X-ASR baseline "
+            "Read-only A/B evaluation of VoiceFly's production X-ASR baseline "
             "or an offline sherpa baseline against one offline sherpa model. "
             "Results are printed to stdout; models are never downloaded. A provider "
             "timeout aborts the run; use an independent process when native inference "
@@ -1719,8 +1719,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "--baseline-model-dir",
         type=Path,
         help=(
-            "required for offline baseline families; forbidden for voiceflypy_x_asr, "
-            "which uses voice_flypy_service.MODEL_DIR"
+            "required for offline baseline families; forbidden for voicefly_x_asr, "
+            "which uses voice_fly_service.MODEL_DIR"
         ),
     )
     parser.add_argument("--second-family", required=True, choices=second_families)
@@ -1731,8 +1731,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-audio-seconds", type=float, default=20.0)
     parser.add_argument(
         "--protocol",
-        choices=(VOICEFLYPY_PROTOCOL_V1,),
-        help="strictly validate and aggregate the fixed VoiceFlypy v1 benchmark",
+        choices=(VOICEFLY_PROTOCOL_V1,),
+        help="strictly validate and aggregate the fixed VoiceFly v1 benchmark",
     )
     output_group = parser.add_mutually_exclusive_group()
     output_group.add_argument(

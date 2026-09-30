@@ -1,5 +1,5 @@
 # 中文数字成语与固定表达：每行一个。命中后，语音数字规范化会保留原样。
-# 可在同步词库 VoiceFlypyLexicon/voice/spoken_number_exceptions.txt 中追加，
+# 可在同步词库 VoiceFlyLexicon/voice/spoken_number_exceptions.txt 中追加，
 # 该同步文件优先于本文件。
 一心一意
 一举两得

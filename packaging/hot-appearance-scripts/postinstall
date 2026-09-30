@@ -1,0 +1,53 @@
+#!/bin/bash
+set -euo pipefail
+state='/Library/Application Support/VoiceFly Hot Appearance Installer'
+user=$(/usr/bin/sed -n '1p' "$state/current")
+user_home=$(/usr/bin/sed -n '2p' "$state/current")
+backup=$(/usr/bin/sed -n '3p' "$state/current")
+uid=$(/usr/bin/id -u "$user")
+user_tmp=$(/usr/bin/sudo -u "$user" /usr/bin/getconf DARWIN_USER_TEMP_DIR)
+as_user() { /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
+front='/Library/Input Methods/VoiceFly.app'
+settings='/Applications/Voice Fly.app'
+lsregister='/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister'
+rollback() {
+ trap - ERR
+ as_user "$front/Contents/MacOS/VoiceFlyInput" --quit || true
+ for attempt in {1..10}; do
+  if ! /usr/bin/pgrep -u "$uid" -x VoiceFlyInput >/dev/null; then break; fi
+  /bin/sleep 1
+ done
+ if /usr/bin/pgrep -u "$uid" -x VoiceFlyInput >/dev/null; then
+  /bin/mv "$state/current" "$backup/manual-recovery-needed"
+  /usr/sbin/chown -R "$uid" "$backup"
+  echo 'Replacement did not exit; recoverable originals remain in the backup.' >&2
+  exit 1
+ fi
+ /bin/mkdir -p "$backup/failed-apps"
+ [[ ! -e "$front" ]] || /bin/mv "$front" "$backup/failed-apps/input.app"
+ [[ ! -e "$settings" ]] || /bin/mv "$settings" "$backup/failed-apps/settings.app"
+ /bin/mv "$backup/replaced-input.app" "$front"
+ /bin/mv "$backup/replaced-settings.app" "$settings"
+ as_user "$lsregister" -f "$front"
+ as_user /usr/bin/open "$front" || true
+ /bin/mv "$state/current" "$backup/failed-hot-update"
+ /usr/sbin/chown -R "$uid" "$backup"
+ exit 1
+}
+trap rollback ERR
+/usr/bin/codesign --verify --deep --strict "$front"
+/usr/bin/codesign --verify --deep --strict "$settings"
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$front/Contents/Info.plist")" == com.simonli.inputmethod.VoiceFly ]] || false
+as_user "$lsregister" -u "$backup/replaced-input.app" || true
+as_user "$lsregister" -u "$backup/input.app" || true
+as_user "$lsregister" -f "$front"
+as_user "$front/Contents/MacOS/VoiceFlyInput" --register-input-source
+# Preserve existing approval and enablement; do not disable/re-enable or select.
+as_user /usr/bin/open "$front"
+# Same-name PDF resources can remain cached by the menu's existing process.
+# Refresh only that user's display agent, leaving the input host and speech alive.
+as_user /usr/bin/pkill -u "$uid" -x TextInputMenuAgent || true
+/bin/mv "$state/current" "$backup/installed-awaiting-input-check"
+/usr/sbin/chown -R "$uid" "$backup"
+trap - ERR
+as_user /usr/bin/open "$settings"

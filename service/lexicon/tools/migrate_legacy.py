@@ -160,7 +160,7 @@ def _empty_term(
         },
         "governance": {
             "source": source,
-            "owner": "voiceflypy-local",
+            "owner": "voicefly-local",
             "evidence_count": 0,
             "confirmed_count": 0,
             "rejected_count": 0,

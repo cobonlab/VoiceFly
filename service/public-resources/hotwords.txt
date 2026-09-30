@@ -1,0 +1,3 @@
+# Public starter vocabulary, independent of the maintainer's personal words.
+人工智能 :1
+语音输入 :1

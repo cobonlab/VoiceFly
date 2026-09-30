@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+state='/Library/Application Support/VoiceFly Appearance Installer'
+user=$(/usr/bin/stat -f%Su /dev/console)
+[[ "$user" != root && "$user" != loginwindow && -n "$user" ]] || exit 1
+user_home=$(/usr/bin/dscl . -read "/Users/$user" NFSHomeDirectory | /usr/bin/sed 's/^NFSHomeDirectory: //')
+uid=$(/usr/bin/id -u "$user")
+front='/Library/Input Methods/VoiceFly.app'
+settings='/Applications/Voice Fly.app'
+[[ "$3" == / ]] || exit 1
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$front/Contents/Info.plist")" == com.simonli.inputmethod.VoiceFly ]] || exit 1
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$settings/Contents/Info.plist")" == com.simonli.voicefly.settings ]] || exit 1
+phase=$(/usr/bin/plutil -extract phase raw "$user_home/Library/Application Support/VoiceFly/service-status.json" 2>/dev/null || true)
+if [[ "$phase" == recording || "$phase" == finalizing ]]; then
+ echo 'Please finish the current dictation before updating Voice Fly.' >&2; exit 1
+fi
+backup="$user_home/Library/Application Support/VoiceFly/Backups/appearance-$(/bin/date +%Y%m%d-%H%M%S)"
+[[ ! -L "$user_home/Library/Application Support/VoiceFly/Backups" && ! -e "$backup" ]] || exit 1
+/bin/mkdir -m 700 "$backup"
+/usr/bin/ditto --rsrc --extattr "$front" "$backup/input.app"
+/usr/bin/ditto --rsrc --extattr "$settings" "$backup/settings.app"
+/usr/sbin/chown -R "$uid" "$backup"
+/bin/mkdir -p "$state"; /bin/chmod 700 "$state"
+[[ ! -e "$state/current" ]] || exit 1
+/usr/bin/printf '%s\n%s\n%s\n' "$user" "$user_home" "$backup" > "$state/current"
+/bin/chmod 600 "$state/current"
+/usr/bin/sudo -u "$user" "$front/Contents/MacOS/VoiceFlyInput" --quit
+/usr/bin/pkill -u "$uid" -x VoiceFlySettings || true

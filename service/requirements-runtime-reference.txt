@@ -5,6 +5,7 @@ sounddevice==0.5.5
 sherpa-onnx==1.13.5
 pyobjc-core==12.2.2; sys_platform == "darwin"
 pyobjc-framework-Cocoa==12.2.2; sys_platform == "darwin"
-wetextprocessing==1.1.1.dev1
+# tn/itn source matches the following official revision (441 files checked).
+wetextprocessing @ git+https://github.com/wenet-e2e/WeTextProcessing.git@039007e6b819bd40c4c4a0644f3939da1da47e44
 pynini==2.1.7
 pyinstaller==6.22.0

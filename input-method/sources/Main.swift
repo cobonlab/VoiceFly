@@ -11,12 +11,12 @@ import InputMethodKit
 @main
 struct SquirrelApp {
   static let userDir = if let pwuid = getpwuid(getuid()) {
-    URL(fileURLWithFileSystemRepresentation: pwuid.pointee.pw_dir, isDirectory: true, relativeTo: nil).appending(components: "Library", "Rime-VoiceFlypy")
+    URL(fileURLWithFileSystemRepresentation: pwuid.pointee.pw_dir, isDirectory: true, relativeTo: nil).appending(components: "Library", "Rime-VoiceFly")
   } else {
-    try! FileManager.default.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("Rime-VoiceFlypy", isDirectory: true)
+    try! FileManager.default.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("Rime-VoiceFly", isDirectory: true)
   }
   static let appDir = Bundle.main.bundleURL
-  static let logDir = FileManager.default.temporaryDirectory.appending(component: "rime.voiceflypy", directoryHint: .isDirectory)
+  static let logDir = FileManager.default.temporaryDirectory.appending(component: "rime.voicefly", directoryHint: .isDirectory)
 
   // swiftlint:disable:next cyclomatic_complexity
   static func main() {
@@ -27,6 +27,15 @@ struct SquirrelApp {
       let args = CommandLine.arguments
       if args.count > 1 {
         switch args[1] {
+        case "--settings":
+          let candidates = [
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Voice Fly.app"),
+            URL(fileURLWithPath: "/Applications/Voice Fly.app")
+          ]
+          if let settingsApp = candidates.first(where: { FileManager.default.fileExists(atPath: $0.path) }) {
+            NSWorkspace.shared.openApplication(at: settingsApp, configuration: NSWorkspace.OpenConfiguration())
+          }
+          return true
         case "--quit":
           let bundleId = Bundle.main.bundleIdentifier!
           let runningSquirrels = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId)
@@ -35,7 +44,12 @@ struct SquirrelApp {
         case "--reload":
           // Squirrel is a background app, and AppKit suspends distributed-notification delivery to inactive apps;
           // deliverImmediately is required for these notifications to reach Squirrel while it stays in the background
-          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlypyReloadNotification"), object: nil, userInfo: nil, deliverImmediately: true)
+          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlyReloadNotification"), object: nil, userInfo: nil, deliverImmediately: true)
+          return true
+        case "--activate":
+          installer.register()
+          installer.enable()
+          installer.select()
           return true
         case "--register-input-source", "--install":
           installer.register()
@@ -69,9 +83,9 @@ struct SquirrelApp {
           return true
         case "--build":
           SquirrelApplicationDelegate.showMessage(msgText: NSLocalizedString("deploy_update", comment: ""))
-          let buildDirectories = VoiceFlypyRimeBuildDirectories(
-            userData: SquirrelApp.userDir,
-            sharedData: Bundle.main.sharedSupportURL!
+          let buildDirectories = VoiceFlyRimeBuildDirectories(
+            userData: args.count > 2 ? URL(fileURLWithPath: args[2], isDirectory: true) : SquirrelApp.userDir,
+            sharedData: Bundle.main.bundleURL.appendingPathComponent("Contents/SharedSupport", isDirectory: true)
           )
           try? FileManager.default.createDirectory(
             at: buildDirectories.userData,
@@ -85,40 +99,56 @@ struct SquirrelApp {
             at: SquirrelApp.logDir,
             withIntermediateDirectories: true
           )
-          setenv("RIME_LOG_DIR", SquirrelApp.logDir.path(), 1)
+          setenv("RIME_LOG_DIR", SquirrelApp.logDir.path, 1)
           var builderTraits = RimeTraits.rimeStructInit()
-          builderTraits.setCString(buildDirectories.sharedData.path(), to: \.shared_data_dir)
-          builderTraits.setCString(buildDirectories.userData.path(), to: \.user_data_dir)
-          builderTraits.setCString(buildDirectories.staging.path(), to: \.staging_dir)
-          builderTraits.setCString(SquirrelApp.logDir.path(), to: \.log_dir)
+          builderTraits.setCString(buildDirectories.sharedData.path, to: \.shared_data_dir)
+          builderTraits.setCString(buildDirectories.userData.path, to: \.user_data_dir)
+          builderTraits.setCString(buildDirectories.staging.path, to: \.staging_dir)
+          builderTraits.setCString(SquirrelApp.logDir.path, to: \.log_dir)
           builderTraits.setCString("Voice Fly", to: \.distribution_code_name)
           builderTraits.setCString("Voice Fly", to: \.distribution_name)
           builderTraits.setCString(
             Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as! String,
             to: \.distribution_version
           )
-          builderTraits.setCString("rime.voiceflypy-builder", to: \.app_name)
+          builderTraits.setCString("rime.voicefly-builder", to: \.app_name)
+          fputs("Voice Fly: preparing input schemes.\n", stderr)
           rimeAPI.setup(&builderTraits)
-          rimeAPI.deployer_initialize(nil)
+          rimeAPI.deployer_initialize(&builderTraits)
           guard rimeAPI.deploy() else {
-            fputs("VoiceFlypy Rime build failed.\n", stderr)
+            fputs("VoiceFly Rime build failed.\n", stderr)
             exit(EXIT_FAILURE)
           }
           return true
         case "--sync":
-          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlypySyncNotification"), object: nil, userInfo: nil, deliverImmediately: true)
+          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlySyncNotification"), object: nil, userInfo: nil, deliverImmediately: true)
           return true
         case "--ascii":
-          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlypyToggleASCIIModeNotification"), object: "ascii", userInfo: nil, deliverImmediately: true)
+          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlyToggleASCIIModeNotification"), object: "ascii", userInfo: nil, deliverImmediately: true)
           return true
         case "--nascii":
-          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlypyToggleASCIIModeNotification"), object: "nascii", userInfo: nil, deliverImmediately: true)
+          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlyToggleASCIIModeNotification"), object: "nascii", userInfo: nil, deliverImmediately: true)
+          return true
+        case "--connection-check":
+          let nonce = UUID().uuidString
+          var result: [String: Bool]?
+          let center = DistributedNotificationCenter.default()
+          let observer = center.addObserver(forName: .init("VoiceFlyConnectionState"), object: nonce, queue: .main) { note in
+            if let ready = note.userInfo?["connected"] as? Bool { result = ["connected": ready] }
+          }
+          center.postNotificationName(.init("VoiceFlyCheckConnection"), object: nonce, userInfo: nil, deliverImmediately: true)
+          let deadline = Date().addingTimeInterval(2)
+          while result == nil && Date() < deadline { RunLoop.current.run(until: Date().addingTimeInterval(0.02)) }
+          center.removeObserver(observer)
+          let connected = result?["connected"] == true
+          print("{\"responded\":\(result != nil),\"connected\":\(connected)}")
+          if !connected { exit(2) }
           return true
         case "--getascii":
           var responseReceived = false
           var asciiStatus = ""
           let observer = DistributedNotificationCenter.default().addObserver(
-            forName: .init("VoiceFlypyASCIIModeResponse"),
+            forName: .init("VoiceFlyASCIIModeResponse"),
             object: nil,
             queue: .main
           ) { notification in
@@ -127,7 +157,7 @@ struct SquirrelApp {
               responseReceived = true
             }
           }
-          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlypyGetASCIIModeNotification"), object: nil, userInfo: nil, deliverImmediately: true)
+          DistributedNotificationCenter.default().postNotificationName(.init("VoiceFlyGetASCIIModeNotification"), object: nil, userInfo: nil, deliverImmediately: true)
           let timeout = Date().addingTimeInterval(2.0)
           while !responseReceived && Date() < timeout {
             RunLoop.current.run(until: Date().addingTimeInterval(0.01))

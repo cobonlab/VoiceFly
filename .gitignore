@@ -29,4 +29,4 @@ service/lexicon/build/
 service/lexicon/generated/
 service/lexicon/profiles/
 personal_usage.json
-voiceflypy_learned_phrases.txt
+voicefly_learned_phrases.txt

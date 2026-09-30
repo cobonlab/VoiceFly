@@ -24,16 +24,16 @@ from typing import Any, Sequence
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SQUIRREL = Path(
-    "/Library/Input Methods/VoiceFlypy.app/Contents/MacOS/Squirrel"
+    "/Library/Input Methods/VoiceFly.app/Contents/MacOS/Squirrel"
 )
-RIME_COMPOSITE_NAME = "luna_pinyin.voiceflypy.dict.yaml"
+RIME_COMPOSITE_NAME = "luna_pinyin.voicefly.dict.yaml"
 RIME_CUSTOM_NAME = "double_pinyin_flypy.custom.yaml"
-RIME_LEARNED_NAME = "voiceflypy_learned_phrases.txt"
+RIME_LEARNED_NAME = "voicefly_learned_phrases.txt"
 
 # Compiler artifacts are intentionally flattened at the speech service's live
 # root.  Adding a compiler artifact does not implicitly make it publishable.
 PUBLISHED_ARTIFACTS: tuple[tuple[str, str, str], ...] = (
-    ("rime/voiceflypy_personal.dict.yaml", "rime", "voiceflypy_personal.dict.yaml"),
+    ("rime/voicefly_personal.dict.yaml", "rime", "voicefly_personal.dict.yaml"),
     ("rime/custom_phrase.txt", "rime", "custom_phrase.txt"),
     ("speech/hotwords.txt", "voice", "hotwords.txt"),
     ("voice/voice_rules.json", "voice", "voice_rules.json"),
@@ -104,7 +104,7 @@ def _require_exact_zero(value: Any, label: str) -> None:
 
 def _assert_rime_dictionary_release(path: Path, release: str) -> None:
     text = path.read_text(encoding="utf-8")
-    if not re.search(r"(?m)^name:\s*voiceflypy_personal\s*$", text):
+    if not re.search(r"(?m)^name:\s*voicefly_personal\s*$", text):
         raise PublishError(f"unexpected Rime dictionary name in {path}")
     version = re.search(r'(?m)^version:\s*["\']?([^"\'\s]+)["\']?\s*$', text)
     if not version or version.group(1) != release:
@@ -198,7 +198,7 @@ def validate_release(
     if voice_rules.get("profile") != profile or voice_rules.get("release") != release:
         raise PublishError("voice_rules.json profile/release does not match manifest")
     _assert_rime_dictionary_release(
-        build_dir / "rime" / "voiceflypy_personal.dict.yaml", release
+        build_dir / "rime" / "voicefly_personal.dict.yaml", release
     )
     if not any(
         line.strip()
@@ -290,7 +290,7 @@ def assert_rime_mapping(custom_yaml: Path) -> None:
         raise PublishError(f"Rime custom YAML is missing or unsafe: {custom_yaml}")
     text = custom_yaml.read_text(encoding="utf-8")
     expected = {
-        "translator/dictionary": "luna_pinyin.voiceflypy",
+        "translator/dictionary": "luna_pinyin.voicefly",
         "translator/user_dict": "luna_pinyin",
     }
     for key, value in expected.items():
@@ -301,7 +301,7 @@ def assert_rime_mapping(custom_yaml: Path) -> None:
             )
     required_patterns = {
         "learned phrase translator": r"(?m)^\s*-\s*table_translator@learned_phrases\s*$",
-        "learned phrase user_dict": r"(?m)^\s*user_dict:\s*[\"']?voiceflypy_learned_phrases[\"']?\s*(?:#.*)?$",
+        "learned phrase user_dict": r"(?m)^\s*user_dict:\s*[\"']?voicefly_learned_phrases[\"']?\s*(?:#.*)?$",
     }
     for label, pattern in required_patterns.items():
         if not re.search(pattern, text):
@@ -331,10 +331,10 @@ def validate_composite(path: Path) -> None:
     if path.is_symlink() or not path.is_file():
         raise PublishError(f"Rime composite source is missing or unsafe: {path}")
     text = path.read_text(encoding="utf-8")
-    if not re.search(r"(?m)^name:\s*luna_pinyin\.voiceflypy\s*$", text):
+    if not re.search(r"(?m)^name:\s*luna_pinyin\.voicefly\s*$", text):
         raise PublishError(f"unexpected composite dictionary name in {path}")
-    if not re.search(r"(?m)^\s*-\s*voiceflypy_personal\s*$", text):
-        raise PublishError(f"composite dictionary does not import voiceflypy_personal: {path}")
+    if not re.search(r"(?m)^\s*-\s*voicefly_personal\s*$", text):
+        raise PublishError(f"composite dictionary does not import voicefly_personal: {path}")
     if not re.search(r"(?m)^\s*-\s*luna_pinyin\s*$", text):
         raise PublishError(f"composite dictionary does not import luna_pinyin: {path}")
 
@@ -451,7 +451,7 @@ def _fsync_directory(path: Path) -> None:
 def _atomic_copy(source: Path, target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f".{target.name}.voiceflypy-publish-", dir=target.parent
+        prefix=f".{target.name}.voicefly-publish-", dir=target.parent
     )
     temporary = Path(temporary_name)
     try:
@@ -474,7 +474,7 @@ def _atomic_copy(source: Path, target: Path) -> None:
 def _write_json_atomic(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f".{path.name}.voiceflypy-publish-", dir=path.parent
+        prefix=f".{path.name}.voicefly-publish-", dir=path.parent
     )
     temporary = Path(temporary_name)
     try:
@@ -681,7 +681,7 @@ def _parser() -> argparse.ArgumentParser:
         "--composite-source",
         type=Path,
         help=(
-            "optional validated luna_pinyin.voiceflypy source to publish; "
+            "optional validated luna_pinyin.voicefly source to publish; "
             "without it the target composite must already exist"
         ),
     )

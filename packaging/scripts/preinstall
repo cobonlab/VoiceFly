@@ -1,0 +1,58 @@
+#!/bin/bash
+set -euo pipefail
+[ "${3:-/}" = / ] || { echo 'Voice Fly requires installation on the startup volume.' >&2; exit 1; }
+user=$(/usr/bin/stat -f%Su /dev/console)
+[ "$user" != root ] && [ "$user" != loginwindow ] || { echo 'Log in before installing Voice Fly.' >&2; exit 1; }
+uid=$(/usr/bin/id -u "$user")
+user_home=$(/usr/bin/dscl . -read "/Users/$user" NFSHomeDirectory | /usr/bin/sed 's/^NFSHomeDirectory: //')
+[ -d "$user_home" ] && [ ! -L "$user_home" ] || exit 1
+state='/Library/Application Support/VoiceFly Installer'
+/bin/mkdir -p "$state"
+/bin/chmod 700 "$state"
+[ ! -f "$state/current" ] || { echo 'An unfinished upgrade requires recovery.' >&2; exit 1; }
+backup="$user_home/Library/Application Support/VoiceFly/Backups/upgrade-$(/bin/date +%Y%m%d-%H%M%S)"
+/bin/mkdir -p "$backup/apps" "$backup/data"
+/bin/chmod 700 "$backup"
+/usr/sbin/chown "$uid" "$user_home/Library/Application Support/VoiceFly" "$user_home/Library/Application Support/VoiceFly/Backups"
+/bin/chmod 700 "$user_home/Library/Application Support/VoiceFly"
+user_tmp=$(/usr/bin/sudo -u "$user" /usr/bin/getconf DARWIN_USER_TEMP_DIR)
+as_user() { /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
+copy() { [ ! -L "$1" ] || exit 1; /usr/bin/ditto --rsrc --extattr "$1" "$2"; }
+# Retired names below are migration inputs only. Backups use neutral names.
+paths=( '/Library/Input Methods/VoiceFly.app' '/Applications/Voice Fly.app' '/Applications/Voice Fly Service.app' '/Library/Input Methods/VoiceFlypy.app' "$user_home/Applications/VoiceFlypyService.app" "$user_home/Applications/Voice Fly.app" )
+names=( input.app settings.app service.app previous-input.app previous-service.app previous-settings.app )
+ids=( com.simonli.inputmethod.VoiceFly com.simonli.voicefly.settings com.simonli.voicefly.service com.simonli.inputmethod.VoiceFlypy com.simonli.voiceflypy.service com.simonli.voiceflypy.settings )
+for ((i=0;i<${#paths[@]};i++)); do
+ p="${paths[$i]}"
+ if [ -e "$p" ]; then
+  actual=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$p/Contents/Info.plist")
+  [ "$actual" = "${ids[$i]}" ] || { echo 'An application at the install location has an unexpected identity.' >&2; exit 1; }
+  copy "$p" "$backup/apps/${names[$i]}"
+ fi
+done
+restore_before_install() {
+ trap - ERR
+ for label in com.simonli.voicefly.service com.simonli.voiceflypy.service; do
+  old_agent="$user_home/Library/LaunchAgents/$label.plist"
+  [ ! -e "$old_agent" ] || as_user /bin/launchctl bootstrap "gui/$uid" "$old_agent" 2>/dev/null || true
+ done
+ for p in '/Library/Input Methods/VoiceFly.app/Contents/MacOS/VoiceFlyInput' '/Library/Input Methods/VoiceFlypy.app/Contents/MacOS/Squirrel'; do
+  if [ -x "$p" ]; then as_user "$p" --enable-input-source || true; fi
+ done
+ exit 1
+}
+trap restore_before_install ERR
+for label in com.simonli.voicefly.service com.simonli.voiceflypy.service; do as_user /bin/launchctl bootout "gui/$uid/$label" 2>/dev/null || true; done
+for p in '/Library/Input Methods/VoiceFly.app/Contents/MacOS/VoiceFlyInput' '/Library/Input Methods/VoiceFlypy.app/Contents/MacOS/Squirrel'; do
+ if [ -x "$p" ]; then as_user "$p" --disable-input-source; as_user "$p" --quit; fi
+done
+as_user /usr/bin/killall VoiceFlySettings 2>/dev/null || true
+/bin/sleep 1
+for name in Rime-VoiceFly 'Application Support/VoiceFly/Lexicon' 'Application Support/VoiceFly/settings.json' 'LaunchAgents/com.simonli.voicefly.service.plist' 'LaunchAgents/com.simonli.voiceflypy.service.plist'; do
+ p="$user_home/Library/$name"
+ if [ -e "$p" ]; then copy "$p" "$backup/data/$name"; fi
+done
+/usr/sbin/chown -R "$uid" "$backup"
+printf '%s\n%s\n%s\n' "$user" "$user_home" "$backup" > "$state/current"
+
+trap - ERR

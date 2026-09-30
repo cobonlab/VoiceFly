@@ -1,0 +1,54 @@
+[
+  {
+    "commit": "01a13287cbd27819be1c34fa1ddc1b3643d5001b",
+    "files": {
+      "double_pinyin.schema.yaml": "763430a99d0cd693805766b49d60b9092bc2af0ca26eb107f1d044566ce765d3",
+      "double_pinyin_abc.schema.yaml": "bb57bc3f3436aa1e9c98e7ad1a7f2b84810dbedc971f659d9bdfe2b5c81eac4f",
+      "double_pinyin_flypy.schema.yaml": "6b522a7e9cb743474287a14678597460bd124369f32573dd63e8f04e7c41d4b9",
+      "double_pinyin_mspy.schema.yaml": "c72dc607000b39795ab267f80ec8727c6551015579b735a839f198422a75d7a2",
+      "double_pinyin_pyjj.schema.yaml": "31903e5cfc2e9c7cd959685cff91ae0f4634238238494dcf6904ad7fba330811",
+      "double_pinyin_st.schema.yaml": "c62437635fd08b96cb5112a9eefae4395a0bf50dbb8faffb1d014ca463eb6d7e"
+    },
+    "repository": "https://github.com/rime/rime-double-pinyin"
+  },
+  {
+    "commit": "56b934b099dfbeab842320f13aa8b461a6ab3e42",
+    "files": {
+      "luna_pinyin.dict.yaml": "75bcf6eb3ff62b129882ed89cc22b2d80a5347aa72bcfa2ccc839bac298e7314",
+      "luna_pinyin.schema.yaml": "668b4d4957e4cc8f9cea32ed3f08f0ecf4a7be8cdba058700507487bd96dd5c7",
+      "luna_pinyin_fluency.schema.yaml": "5430a576b6780a068e37f83f541a6e9d1eff59be233e3a02a193aee1b102bb51",
+      "luna_pinyin_simp.schema.yaml": "403cf4c6abffe5fc6c1cec072b0142304ccd9ff032fef0cfffcc020ef2eb06ee",
+      "luna_pinyin_tw.schema.yaml": "4e4bfc32f1884506242e21aa89cb22696c58cc27711d7f14e00541e5fa108fcb",
+      "luna_quanpin.schema.yaml": "1d2bc8f0a62179f149f6449185ed787f761e8f53c304e5e11a78461b9a8d7999",
+      "pinyin.yaml": "caa220b05172bf35775db07fed6ead7719c742e6139232d9797040dbe65f746c"
+    },
+    "repository": "https://github.com/rime/rime-luna-pinyin"
+  },
+  {
+    "commit": "0c6861ef7420ee780270ca6d993d18d4101049d0",
+    "files": {
+      "pinyin_simp.dict.yaml": "e341598343a0f0f2035bb1aafc34a7f3bb7887deeecb3f60796262aaa2983e6b",
+      "pinyin_simp.schema.yaml": "726772190a325ae4bf236915e7d62a23fedd8cf1da8a74370a20f87196c67775"
+    },
+    "repository": "https://github.com/rime/rime-pinyin-simp"
+  },
+  {
+    "commit": "723e51bc266cf9464530c1ddedb856aa18e3da34",
+    "files": {
+      "terra_pinyin.dict.yaml": "2f881a239e09a61e5993e79257655f98f81c3789dc8aeea5f33477f710345b27",
+      "terra_pinyin.schema.yaml": "d3b5628abfabac615589e8cc7bf6bf2bf63c60d499136592495a21d992b5cc6d",
+      "terra_pinyin_12345.schema.yaml": "7f1380cf93342bb379460435c55c86621494b7e1457d1a301f2f770c90368a82"
+    },
+    "repository": "https://github.com/rime/rime-terra-pinyin"
+  },
+  {
+    "commit": "152a0d3f3efe40cae216d1e3b338242446848d07",
+    "files": {
+      "wubi86.dict.yaml": "f833d86b72341fe82e069a425b6625f29ef85f1bc0f34f6fb7975fe514888b5a",
+      "wubi86.schema.yaml": "cdb5aac1a9aa071552d5fdffdfe5a6618b429b19358b8b1e003130e835d5a166",
+      "wubi_pinyin.schema.yaml": "29c8cffc57bb1e1179272b99d9323726de09e5331e748fb4a02d46d1213eabe8",
+      "wubi_trad.schema.yaml": "a46f416c7d67916a35de54b72e236b53c2281da9ab439eec0b5b68db3078f794"
+    },
+    "repository": "https://github.com/rime/rime-wubi"
+  }
+]

@@ -22,7 +22,7 @@ show_notifications_when: appropriate
 # compact glyphs; otherwise the schema's `states:` value is used as-is.
 # Falls back to "中" / "Ａ" when no `states:` is defined.
 status_icon:
-  show: true
+  show: false
 
 style:
   color_scheme: native

@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>TISInputSourceID</key>
-	<string>com.simonli.inputmethod.VoiceFlypy</string>
+	<string>com.simonli.inputmethod.VoiceFly</string>
 	<key>TISIntendedLanguage</key>
 	<string>zh-Hans</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Squirrel</string>
+	<string>VoiceFlyInput</string>
 	<key>CFBundleIconFile</key>
-	<string>RimeIcon.icns</string>
+	<string>VoiceFlyIcon.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -22,20 +22,22 @@
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.2.0</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ComponentInputModeDict</key>
 	<dict>
 		<key>tsInputModeListKey</key>
 		<dict>
-			<key>com.simonli.inputmethod.VoiceFlypy.Hans</key>
+			<key>com.simonli.inputmethod.VoiceFly.Hans</key>
 			<dict>
 				<key>TISInputSourceID</key>
-				<string>com.simonli.inputmethod.VoiceFlypy.Hans</string>
+				<string>com.simonli.inputmethod.VoiceFly.Hans</string>
 				<key>TISIntendedLanguage</key>
 				<string>zh-Hans</string>
 				<key>tsInputModeAlternateMenuIconFileKey</key>
-				<string>rime.pdf</string>
+				<string>voicefly-menu-badge-mask.pdf</string>
 				<key>tsInputModeCharacterRepertoireKey</key>
 				<array>
 					<string>Hans</string>
@@ -47,9 +49,9 @@
 				<key>tsInputModeKeyEquivalentModifiersKey</key>
 				<integer>4608</integer>
 				<key>tsInputModeMenuIconFileKey</key>
-				<string>rime.pdf</string>
+				<string>voicefly-menu-badge-mask.pdf</string>
 				<key>tsInputModePaletteIconFileKey</key>
-				<string>rime.pdf</string>
+				<string>voicefly-menu-badge-mask.pdf</string>
 				<key>tsInputModePrimaryInScriptKey</key>
 				<true/>
 				<key>tsInputModeScriptKey</key>
@@ -58,11 +60,11 @@
 		</dict>
 		<key>tsVisibleInputModeOrderedArrayKey</key>
 		<array>
-			<string>com.simonli.inputmethod.VoiceFlypy.Hans</string>
+			<string>com.simonli.inputmethod.VoiceFly.Hans</string>
 		</array>
 	</dict>
 	<key>InputMethodConnectionName</key>
-	<string>com.simonli.inputmethod.VoiceFlypy_Connection</string>
+	<string>com.simonli.inputmethod.VoiceFly_Connection</string>
 	<key>InputMethodServerControllerClass</key>
 	<string>Squirrel.SquirrelInputController</string>
 	<key>InputMethodServerDelegateClass</key>

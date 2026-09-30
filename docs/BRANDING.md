@@ -1,0 +1,17 @@
+# Voice Fly artwork and settings window
+
+Voice Fly uses an original outlined microphone with two curved wind lines, approved by the maintainer on 2026-10-01. The design uses simple geometry, a monochrome mark and ample spacing. The approved input-source badge places the A mark inside a rounded rectangle with a thin border (22 × 16 points), appearing white with a dark microphone on the maintainer's dark menu. The original opaque black-on-white PDF became a blank white block in the native menu. The corrected vector resource, `voicefly-menu-badge-mask.pdf`, cuts the microphone and wind strokes out of the badge's alpha, so native monochrome tinting preserves their contrast. macOS supplies the foreground tint in other appearances; this is not a fixed-color bitmap. After build 26 was installed without logout, the maintainer confirmed the native icon, Chinese typing and Control dictation all normal. Finder and the settings window use the corresponding application artwork. The active product no longer uses the Squirrel/Rime logo. Attribution for the underlying Rime and Squirrel software remains in the licenses and source notices.
+
+The settings window is an accessory application: opening it creates a window without adding an item to the Dock or the application switcher. Closing its last window exits the settings process; opening settings again creates a fresh window.
+
+The additional passive status badge (such as 中) is off by default. macOS's own input-source menu is the switching control. The existing-install hot artwork update was validated on the maintainer's macOS 26.6.2 Apple Silicon Mac without logout: native switching, Chinese typing and Control-triggered dictation all worked after replacement. This does not establish compatibility with every macOS version or a first installation.
+
+The hot update waits for an idle speech service and ABC selection, gracefully exits only the input method, moves whole old applications into a private backup, verifies replacement signatures, registers the canonical installed path, preserves source approval/enablement, and leaves selection to the native menu. It does not restart the speech service, other applications or the Mac user session. Build with `python3 scripts/build_installer.py --hot-appearance`.
+
+Do not infer working input from TIS selection success. The frontend's `--connection-check` confirms that a responding live process has an active input controller, client and Rime session; actual typing and dictation still require user validation. See the upstream [macOS 26 activation report](https://github.com/rime/squirrel/issues/1162).
+
+## Design alternatives
+
+The generator retains A (outlined microphone and curved wind, selected) and B (solid microphone and straight wind). These are development-time artwork choices. This preview does not offer an in-app logo picker; updating the system input-source icon requires rebuilding the signed application resources.
+
+`scripts/brand_assets.swift` is the editable vector source. Compile it with Swift, run it with an output directory and `A` or `B`, and convert the generated `VoiceFly.iconset` using macOS `iconutil`. Keep the selected SVG in `input-method/VoiceFly.icon/Assets/logo.svg`, the menu PDF in `input-method/resources/branding/`, and the fallback PNGs in `input-method/Assets.xcassets/VoiceFlyIcon.appiconset/` consistent. Rebuild both the input method and the settings app after changing the artwork.

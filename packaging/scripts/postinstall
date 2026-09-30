@@ -1,0 +1,92 @@
+#!/bin/bash
+set -euo pipefail
+state='/Library/Application Support/VoiceFly Installer'
+user=$(/usr/bin/sed -n '1p' "$state/current")
+user_home=$(/usr/bin/sed -n '2p' "$state/current")
+backup=$(/usr/bin/sed -n '3p' "$state/current")
+uid=$(/usr/bin/id -u "$user")
+user_tmp=$(/usr/bin/sudo -u "$user" /usr/bin/getconf DARWIN_USER_TEMP_DIR)
+as_user() { /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
+front='/Library/Input Methods/VoiceFly.app/Contents/MacOS/VoiceFlyInput'
+settings='/Applications/Voice Fly.app/Contents/MacOS/VoiceFlySettings'
+agent="$user_home/Library/LaunchAgents/com.simonli.voicefly.service.plist"
+rollback() {
+ trap - ERR
+ as_user /bin/launchctl bootout "gui/$uid/com.simonli.voicefly.service" 2>/dev/null || true
+ as_user "$front" --quit 2>/dev/null || true
+ /bin/mkdir -p "$backup/failed-apps" "$backup/failed-data"
+ paths=( '/Library/Input Methods/VoiceFly.app' '/Applications/Voice Fly.app' '/Applications/Voice Fly Service.app' )
+ names=( input.app settings.app service.app )
+ for ((i=0;i<${#paths[@]};i++)); do
+  p="${paths[$i]}"; name="${names[$i]}"
+  [ ! -e "$p" ] || /bin/mv "$p" "$backup/failed-apps/$name"
+  [ ! -e "$backup/apps/$name" ] || /usr/bin/ditto --rsrc --extattr "$backup/apps/$name" "$p"
+ done
+ for name in Rime-VoiceFly 'Application Support/VoiceFly/Lexicon' 'Application Support/VoiceFly/settings.json' 'LaunchAgents/com.simonli.voicefly.service.plist'; do
+  p="$user_home/Library/$name"
+  /bin/mkdir -p "$backup/failed-data/$(/usr/bin/dirname "$name")"
+  [ ! -e "$p" ] || /bin/mv "$p" "$backup/failed-data/$name"
+  if [ -e "$backup/data/$name" ]; then /usr/bin/ditto --rsrc --extattr "$backup/data/$name" "$p"; /usr/sbin/chown -R "$uid" "$p"; fi
+ done
+ # Restore retired bundles too if an archive move failed during cleanup.
+ old_paths=( '/Library/Input Methods/VoiceFlypy.app' "$user_home/Applications/VoiceFlypyService.app" "$user_home/Applications/Voice Fly.app" )
+ old_names=( previous-input.app previous-service.app previous-settings.app )
+ for ((i=0;i<${#old_paths[@]};i++)); do
+  p="${old_paths[$i]}"
+  if [ ! -e "$p" ] && [ -e "$backup/apps/${old_names[$i]}" ]; then /usr/bin/ditto --rsrc --extattr "$backup/apps/${old_names[$i]}" "$p"; fi
+ done
+ for pair in "$user_home/Library/Rime-VoiceFlypy|previous-rime" "$user_home/Library/Application Support/VoiceFlypy|previous-support" "$user_home/Library/LaunchAgents/com.simonli.voiceflypy.service.plist|previous-startup.plist"; do
+  p="${pair%|*}"; name="${pair##*|}"
+  if [ ! -e "$p" ] && [ -e "$backup/$name" ]; then /bin/mv "$backup/$name" "$p"; fi
+ done
+ old_agent="$user_home/Library/LaunchAgents/com.simonli.voiceflypy.service.plist"
+ if [ -e "$old_agent" ]; then as_user /bin/launchctl bootstrap "gui/$uid" "$old_agent" 2>/dev/null || true; fi
+ old_front='/Library/Input Methods/VoiceFlypy.app/Contents/MacOS/Squirrel'
+ if [ -x "$old_front" ]; then as_user "$old_front" --enable-input-source || true; fi
+ /bin/mv "$state/current" "$backup/failed-upgrade-state"
+ /usr/sbin/chown -R "$uid" "$backup"
+ echo 'Upgrade failed; previous apps and private data were retained for recovery.' >&2
+ exit 1
+}
+trap rollback ERR
+for app in '/Library/Input Methods/VoiceFly.app' '/Applications/Voice Fly.app' '/Applications/Voice Fly Service.app'; do /usr/bin/codesign --verify --deep --strict "$app"; done
+as_user "$settings" --initialize
+as_user "$front" --register-input-source
+as_user "$front" --build
+as_user "$front" --enable-input-source
+/bin/mkdir -p "$user_home/Library/LaunchAgents" "$user_home/Library/Logs/VoiceFly"
+/usr/sbin/chown "$uid" "$user_home/Library/LaunchAgents" "$user_home/Library/Logs/VoiceFly"
+[ ! -L "$agent" ] || exit 1
+/bin/cat > "$agent" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>com.simonli.voicefly.service</string>
+<key>ProgramArguments</key><array><string>/Applications/Voice Fly Service.app/Contents/MacOS/VoiceFlyService</string></array>
+<key>RunAtLoad</key><true/>
+<key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+<key>ProcessType</key><string>Interactive</string>
+<key>ThrottleInterval</key><integer>10</integer>
+</dict></plist>
+PLIST
+/bin/chmod 600 "$agent"; /usr/sbin/chown "$uid" "$agent"
+as_user /bin/launchctl bootstrap "gui/$uid" "$agent"
+# Selection belongs to the native input menu after the required Mac logout.
+# Archive retired apps only after the new configuration was deployed.
+for pair in '/Library/Input Methods/VoiceFlypy.app|retired-input.app' "$user_home/Applications/VoiceFlypyService.app|retired-service.app" "$user_home/Applications/Voice Fly.app|retired-settings.app"; do
+ p="${pair%|*}"; name="${pair##*|}"
+ if [ -e "$p" ]; then /bin/mv "$p" "$backup/$name"; fi
+done
+old_agent="$user_home/Library/LaunchAgents/com.simonli.voiceflypy.service.plist"
+[ ! -e "$old_agent" ] || /bin/mv "$old_agent" "$backup/previous-startup.plist"
+for pair in "$user_home/Library/Rime-VoiceFlypy|previous-rime" "$user_home/Library/Application Support/VoiceFlypy|previous-support"; do
+ p="${pair%|*}"; name="${pair##*|}"
+ [ ! -e "$p" ] || /bin/mv "$p" "$backup/$name"
+done
+# Remove only the retired service's microphone permission entry.
+as_user /usr/bin/tccutil reset Microphone com.simonli.voiceflypy.service 2>/dev/null || true
+/bin/mv "$state/current" "$backup/completed-upgrade-state"
+/usr/sbin/chown -R "$uid" "$backup"
+trap - ERR
+as_user /usr/bin/open '/Applications/Voice Fly.app'
+echo 'Voice Fly installed. Private dictionaries and the previous version are backed up.'

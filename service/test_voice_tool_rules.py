@@ -23,7 +23,7 @@ class ResourcePathTests(unittest.TestCase):
         self.assertEqual(
             Path(voice_tool.DOMAIN_DICT),
             Path.home()
-            / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync/domain_dict.txt",
+            / "Library/Application Support/VoiceFly/Lexicon/domain_dict.txt",
         )
 
     def test_source_has_no_developer_home_literal(self):
@@ -54,8 +54,8 @@ class StructuredVoiceRuleTests(unittest.TestCase):
         self.env = mock.patch.dict(
             os.environ,
             {
-                "VOICEFLYPY_VOICE_RULES_FILE": str(self.rules_path),
-                "VOICEFLYPY_ENABLE_SPOKEN_ALIASES": "0",
+                "VOICEFLY_VOICE_RULES_FILE": str(self.rules_path),
+                "VOICEFLY_ENABLE_SPOKEN_ALIASES": "0",
             },
         )
         self.env.start()
@@ -189,7 +189,7 @@ class LegacyCompatibilityTests(unittest.TestCase):
         self.dictionary = Path(self.tempdir.name) / "domain_dict.txt"
         self.dictionary.write_text("R A G\tRAG\tai\nSHOP IFY\tShopify\tcommerce\n", encoding="utf-8")
         self.env = mock.patch.dict(
-            os.environ, {"VOICEFLYPY_DOMAIN_DICT": str(self.dictionary)}
+            os.environ, {"VOICEFLY_DOMAIN_DICT": str(self.dictionary)}
         )
         self.env.start()
         voice_tool._reset_rule_caches_for_tests()
@@ -418,7 +418,7 @@ class EngineeringSymbolNormalizationTests(unittest.TestCase):
         )
         self.env = mock.patch.dict(
             os.environ,
-            {"VOICEFLYPY_ENGINEERING_SYMBOL_ALIASES": str(self.aliases)},
+            {"VOICEFLY_ENGINEERING_SYMBOL_ALIASES": str(self.aliases)},
         )
         self.env.start()
         voice_tool._reset_rule_caches_for_tests()

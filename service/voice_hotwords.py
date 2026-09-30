@@ -1,4 +1,4 @@
-"""Hotword decoder configuration for VoiceFlypy.
+"""Hotword decoder configuration for VoiceFly.
 
 This module deliberately has no AppKit, sherpa-onnx, or other third-party
 imports.  Resource discovery and fallback policy can therefore be tested in a
@@ -19,14 +19,14 @@ from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
 
-DISABLE_ENV = "VOICEFLYPY_DISABLE_HOTWORDS"
-HOTWORDS_FILE_ENV = "VOICEFLYPY_HOTWORDS_FILE"
-BPE_VOCAB_ENV = "VOICEFLYPY_BPE_VOCAB"
-CUSTOM_PHRASES_ENV = "VOICEFLYPY_RIME_CUSTOM_PHRASES"
-PERSONAL_USAGE_ENV = "VOICEFLYPY_PERSONAL_USAGE"
-LEARNED_PHRASES_ENV = "VOICEFLYPY_RIME_LEARNED_PHRASES"
-SYMBOL_ALIASES_ENV = "VOICEFLYPY_ENGINEERING_SYMBOL_ALIASES"
-COMBINED_HOTWORDS_ENV = "VOICEFLYPY_COMBINED_HOTWORDS"
+DISABLE_ENV = "VOICEFLY_DISABLE_HOTWORDS"
+HOTWORDS_FILE_ENV = "VOICEFLY_HOTWORDS_FILE"
+BPE_VOCAB_ENV = "VOICEFLY_BPE_VOCAB"
+CUSTOM_PHRASES_ENV = "VOICEFLY_RIME_CUSTOM_PHRASES"
+PERSONAL_USAGE_ENV = "VOICEFLY_PERSONAL_USAGE"
+LEARNED_PHRASES_ENV = "VOICEFLY_RIME_LEARNED_PHRASES"
+SYMBOL_ALIASES_ENV = "VOICEFLY_ENGINEERING_SYMBOL_ALIASES"
+COMBINED_HOTWORDS_ENV = "VOICEFLY_COMBINED_HOTWORDS"
 DEFAULT_HOTWORDS_SCORE = 1.5
 DEFAULT_MAX_ACTIVE_PATHS = 8
 CUSTOM_PHRASE_MIN_WEIGHT = 100
@@ -541,7 +541,7 @@ def _personal_resource_paths(
     include_default_user_paths: bool,
 ) -> tuple[Path | None, Path | None, Path | None, Path | None, Path]:
     default_custom_phrases = (
-        (Path.home() / "Library/Rime-VoiceFlypy/custom_phrase.txt",)
+        (Path.home() / "Library/Rime-VoiceFly/custom_phrase.txt",)
         if include_default_user_paths
         else ()
     )
@@ -552,7 +552,7 @@ def _personal_resource_paths(
         "static custom phrase source",
     )
     default_learned_phrases = (
-        (Path.home() / "Library/Rime-VoiceFlypy/voiceflypy_learned_phrases.txt",)
+        (Path.home() / "Library/Rime-VoiceFly/voicefly_learned_phrases.txt",)
         if include_default_user_paths
         else ()
     )
@@ -565,7 +565,7 @@ def _personal_resource_paths(
     default_personal_usage = (
         (
             Path.home()
-            / "Library/Application Support/VoiceFlypy/Lexicon/personal_usage.json"
+            / "Library/Application Support/VoiceFly/Lexicon/personal_usage.json"
         ),
     ) if include_default_user_paths else (live_lexicon_root / "personal_usage.json",)
     personal_usage = _configured_or_first_file(
@@ -599,7 +599,7 @@ def _combined_hotword_output(
 ) -> Path:
     configured_output = _configured_path(environment, COMBINED_HOTWORDS_ENV)
     return configured_output[0] if configured_output else (
-        Path.home() / "Library/Caches/VoiceFlypy/lexicon/combined_hotwords.txt"
+        Path.home() / "Library/Caches/VoiceFly/lexicon/combined_hotwords.txt"
         if include_default_user_paths
         else live_lexicon_root / "combined_hotwords.txt"
     )
@@ -620,8 +620,7 @@ def hotword_candidates(
     if live_lexicon_root is None:
         live_lexicon_root = (
             Path.home()
-            / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync"
-            / "VoiceFlypyLexicon"
+            / "Library/Application Support/VoiceFly/Lexicon"
         )
     return (
         *_configured_path(env, HOTWORDS_FILE_ENV),
@@ -682,8 +681,7 @@ def resolve_decoder_config(
     if live_lexicon_root is None:
         live_lexicon_root = (
             Path.home()
-            / "Library/Mobile Documents/com~apple~CloudDocs/AppConfig/RimeSync"
-            / "VoiceFlypyLexicon"
+            / "Library/Application Support/VoiceFly/Lexicon"
         )
     personal_count = 0
     personal_error = None

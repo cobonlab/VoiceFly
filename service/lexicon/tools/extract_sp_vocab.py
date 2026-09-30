@@ -2,7 +2,7 @@
 """Extract a SentencePiece ``.vocab`` text file from a ``.model`` file.
 
 This intentionally implements only the small protobuf subset used by
-SentencePiece's ModelProto so the VoiceFlypy hotword experiment does not need
+SentencePiece's ModelProto so the VoiceFly hotword experiment does not need
 to install another package into the live ASR environment.
 """
 

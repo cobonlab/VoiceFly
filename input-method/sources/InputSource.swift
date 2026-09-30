@@ -9,10 +9,10 @@ import Foundation
 import InputMethodKit
 
 final class SquirrelInstaller {
-  private static let rootInputSourceID = "com.simonli.inputmethod.VoiceFlypy"
+  private static let rootInputSourceID = "com.simonli.inputmethod.VoiceFly"
   enum InputMode: String, CaseIterable {
     static let primary = Self.hans
-    case hans = "com.simonli.inputmethod.VoiceFlypy.Hans"
+    case hans = "com.simonli.inputmethod.VoiceFly.Hans"
   }
   private lazy var inputSources: [String: TISInputSource] = {
     var inputSources = [String: TISInputSource]()

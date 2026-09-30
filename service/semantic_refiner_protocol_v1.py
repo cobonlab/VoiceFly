@@ -1,4 +1,4 @@
-"""Pure VoiceFlypy v1 protocol validation and anonymous quality aggregation.
+"""Pure VoiceFly v1 protocol validation and anonymous quality aggregation.
 
 The fixed canonical strings are public protocol data.  They are intentionally
 kept inside this module so callers cannot silently redefine the benchmark.
@@ -38,7 +38,7 @@ __all__ = (
 )
 
 
-PROTOCOL_VERSION = "voiceflypy-semantic-refiner-v1"
+PROTOCOL_VERSION = "voicefly-semantic-refiner-v1"
 EXPECTED_SAMPLE_COUNT = 24
 RELATIVE_REDUCTION_MIN_BASELINE_DISTANCE = 10
 RELATIVE_REDUCTION_NUMERATOR = 1

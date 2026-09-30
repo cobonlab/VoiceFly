@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one explicit, read-only VoiceFlypy semantic-refiner probe.
+"""Run one explicit, read-only VoiceFly semantic-refiner probe.
 
 The probe reads a caller-supplied PCM WAV into memory, sends the resulting
 ``AudioSnapshot`` to the configured loopback whisper.cpp endpoint, and runs
@@ -36,7 +36,7 @@ from voice_refiner import (
 
 
 SCHEMA_VERSION = 1
-PROBE_NAME = "voiceflypy_semantic_refiner"
+PROBE_NAME = "voicefly_semantic_refiner"
 DEFAULT_ENDPOINT = "http://127.0.0.1:18080/inference"
 MAX_WAV_CHANNELS = 8
 MAX_WAV_PCM_BYTES = 32 * 1024 * 1024

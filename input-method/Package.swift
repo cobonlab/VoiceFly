@@ -3,17 +3,19 @@
 import PackageDescription
 
 let package = Package(
-  name: "VoiceFlypyCore",
+  name: "VoiceFlyCore",
   platforms: [.macOS(.v13)],
   products: [
-    .library(name: "VoiceFlypyCore", targets: ["VoiceFlypyCore"]),
+    .library(name: "VoiceFlyCore", targets: ["VoiceFlyCore"]),
+    .executable(name: "VoiceFlySettings", targets: ["VoiceFlySettings"]),
   ],
   targets: [
-    .target(name: "VoiceFlypyCore", path: "VoiceFlypyCore"),
+    .target(name: "VoiceFlyCore", path: "VoiceFlyCore"),
+    .executableTarget(name: "VoiceFlySettings", dependencies: ["VoiceFlyCore"], path: "settings"),
     .testTarget(
-      name: "VoiceFlypyCoreTests",
-      dependencies: ["VoiceFlypyCore"],
-      path: "tests/VoiceFlypyCoreTests"
+      name: "VoiceFlyCoreTests",
+      dependencies: ["VoiceFlyCore"],
+      path: "tests/VoiceFlyCoreTests"
     ),
   ]
 )

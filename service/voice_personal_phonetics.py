@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Sequence
 
 
-PERSONAL_USAGE_ENV = "VOICEFLYPY_PERSONAL_USAGE"
+PERSONAL_USAGE_ENV = "VOICEFLY_PERSONAL_USAGE"
 MAX_PERSONAL_USAGE_BYTES = 4 * 1024 * 1024
 MAX_PERSONAL_USAGE_TERMS = 10_000
 MAX_EXPLICIT_PHRASES = 256
@@ -350,7 +350,7 @@ def _personal_usage_candidates() -> tuple[Path, ...]:
         return (Path(explicit).expanduser(),)
     return (
         Path.home()
-        / "Library/Application Support/VoiceFlypy/Lexicon/personal_usage.json",
+        / "Library/Application Support/VoiceFly/Lexicon/personal_usage.json",
     )
 
 

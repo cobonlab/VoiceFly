@@ -22,7 +22,7 @@ OPENCC_DATA = data/opencc/TSCharacters.ocd2 \
 	data/opencc/TSPhrases.ocd2 \
 	data/opencc/t2s.json
 SPARKLE_FRAMEWORK = Frameworks/Sparkle.framework
-PACKAGE = package/VoiceFlypy.pkg
+PACKAGE = package/VoiceFly.pkg
 DEPS_CHECK = $(RIME_LIBRARY) $(PLUM_DATA) $(OPENCC_DATA) $(SPARKLE_FRAMEWORK)
 
 OPENCC_DATA_OUTPUT = librime/share/opencc/*.*
@@ -143,9 +143,9 @@ ifdef DEV_ID
 endif
 	bash package/make_package "$(DERIVED_DATA_PATH)"
 ifdef DEV_ID
-	rm -f package/VoiceFlypy-signed.pkg
-	productsign --sign "Developer ID Installer: $(DEV_ID)" "$(PACKAGE)" package/VoiceFlypy-signed.pkg
-	mv -f package/VoiceFlypy-signed.pkg "$(PACKAGE)"
+	rm -f package/VoiceFly-signed.pkg
+	productsign --sign "Developer ID Installer: $(DEV_ID)" "$(PACKAGE)" package/VoiceFly-signed.pkg
+	mv -f package/VoiceFly-signed.pkg "$(PACKAGE)"
 	xcrun notarytool submit "$(PACKAGE)" --keychain-profile "$(DEV_ID)" --wait
 	xcrun stapler staple "$(PACKAGE)"
 endif
@@ -156,7 +156,7 @@ archive: package package/sign_update
 	bash package/make_archive
 
 DSTROOT = /Library/Input Methods
-VOICEFLYPY_APP_ROOT = $(DSTROOT)/VoiceFlypy.app
+VOICEFLY_APP_ROOT = $(DSTROOT)/VoiceFly.app
 INSTALL_BACKUP_ROOT ?= $(abspath ../backups)
 
 .PHONY: permission-check install-debug install-release
@@ -165,10 +165,10 @@ permission-check:
 	@[ -w "$(DSTROOT)" ] || { echo "$(DSTROOT) is not writable; run the install target with sudo."; exit 1; }
 
 install-debug: debug permission-check
-	DSTROOT="$(DSTROOT)" VOICEFLYPY_BACKUP_ROOT="$(INSTALL_BACKUP_ROOT)" RIME_NO_PREBUILD=1 bash scripts/install-local "$(DERIVED_DATA_PATH)/Build/Products/Debug/VoiceFlypy.app"
+	DSTROOT="$(DSTROOT)" VOICEFLY_BACKUP_ROOT="$(INSTALL_BACKUP_ROOT)" RIME_NO_PREBUILD=1 bash scripts/install-local "$(DERIVED_DATA_PATH)/Build/Products/Debug/VoiceFly.app"
 
 install-release: release permission-check
-	DSTROOT="$(DSTROOT)" VOICEFLYPY_BACKUP_ROOT="$(INSTALL_BACKUP_ROOT)" bash scripts/install-local "$(DERIVED_DATA_PATH)/Build/Products/Release/VoiceFlypy.app"
+	DSTROOT="$(DSTROOT)" VOICEFLY_BACKUP_ROOT="$(INSTALL_BACKUP_ROOT)" bash scripts/install-local "$(DERIVED_DATA_PATH)/Build/Products/Release/VoiceFly.app"
 
 .PHONY: clean clean-deps
 

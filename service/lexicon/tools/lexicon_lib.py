@@ -14,7 +14,7 @@ from typing import Any, Iterable
 
 
 GENERATOR_VERSION = "0.1.0"
-RIME_DICTIONARY_NAME = "voiceflypy_personal"
+RIME_DICTIONARY_NAME = "voicefly_personal"
 RIME_DICTIONARY_FILE = f"{RIME_DICTIONARY_NAME}.dict.yaml"
 VALID_LANGUAGES = {"zh", "en", "mixed", "other"}
 VALID_LAYERS = {"core", "personal", "domain", "project", "probation", "quarantine"}

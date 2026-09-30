@@ -13,17 +13,17 @@ fi
 script_dir="$(cd "$(dirname "$0")" && pwd -P)"
 source "${script_dir}/common.sh"
 derived_data_root="$(resolve_derived_data_path "${DERIVED_DATA_PATH_ARGUMENT}")"
-app_dir="${derived_data_root}/Build/Products/Release/VoiceFlypy.app"
+app_dir="${derived_data_root}/Build/Products/Release/VoiceFly.app"
 entitlement="${PROJECT_ROOT}/resources/Squirrel.entitlements"
 
-if [ ! -d "${app_dir}" ] || [ ! -x "${app_dir}/Contents/MacOS/Squirrel" ]; then
-    echo >&2 "ERROR: invalid VoiceFlypy release app: ${app_dir}"
+if [ ! -d "${app_dir}" ] || [ ! -x "${app_dir}/Contents/MacOS/VoiceFlyInput" ]; then
+    echo >&2 "ERROR: invalid VoiceFly release app: ${app_dir}"
     exit 1
 fi
 
 actual_bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${app_dir}/Contents/Info.plist")"
 actual_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "${app_dir}/Contents/Info.plist")"
-if [ "${actual_bundle_identifier}" != 'com.simonli.inputmethod.VoiceFlypy' ] || [ "${actual_executable}" != 'Squirrel' ]; then
+if [ "${actual_bundle_identifier}" != 'com.simonli.inputmethod.VoiceFly' ] || [ "${actual_executable}" != 'VoiceFlyInput' ]; then
     echo >&2 "ERROR: refusing to sign unexpected identity ${actual_bundle_identifier}/${actual_executable}."
     exit 1
 fi

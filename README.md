@@ -6,7 +6,18 @@
 
 Voice Fly grew from daily use and sustained development with Codex. It combines Squirrel/Rime typing with local streaming speech recognition, so a user can type, hold Control to dictate, see text while speaking, and release to commit. Explicitly saved personal terms can inform both typing and speech.
 
-**Status: early development source release.** The integrated system runs on the maintainer's Apple Silicon Mac. This repository makes the integration and regression tests available for review and contribution. A complete installer for new users, a visual settings window, and integrated support for additional typing schemes are still being developed. There is no consumer installation package in this release.
+**Status: 0.2.0-preview.2 — public source preview.** Native settings, six keyboard schemes, local personal vocabulary, and combined installation tooling are now implemented. This release provides source and public resources; it does not include a downloadable application installer. The locally built bundle targets **Apple Silicon on macOS 26.4+**. It uses local development signing; Apple notarization, broader OS coverage and a new-user installation trial remain work. See [installation and limitations](docs/INSTALL.md).
+
+## New in this preview
+
+- Open real settings without adding a Dock icon, and choose among six Chinese typing schemes.
+- Manage shared personal words locally, including pronunciation, import/export and migration from earlier installations.
+- Use the approved microphone-and-wind artwork, including a framed input-source badge.
+- Update artwork on an existing installation without logging out on the maintainer's tested Mac; keep backups and verify actual typing and dictation.
+
+<img src="docs/images/voicefly-menu-badge.png" width="220" alt="Voice Fly's approved white badge with dark microphone and wind lines on a dark background">
+
+The maintainer confirmed the final native badge, Chinese typing and Control dictation on macOS 26.6.2 Apple Silicon after frontend build 26 without logout. This single-machine result is not an independent installation guarantee. See the [release notes](docs/releases/0.2.0-preview.2.md).
 
 ## Why this project exists
 
@@ -25,17 +36,19 @@ The speech model runs locally. The baseline recognizer does not require an OpenA
 ## Implemented in the maintained local system
 
 - Native input-method composition for streaming text and final submission.
-- Rime/Flypy typing with a custom candidate grid.
-- Hold-to-talk Control interaction, microphone-ready feedback, and release-to-finalize behavior.
+- Full pinyin, Flypy, Natural Code and Microsoft double pinyin, Wubi 86, and Wubi-pinyin mixed input.
+- Native settings for keyboard schemes, candidate rows, punctuation, simplified/traditional output, dictation key and microphone choice.
+- A local shared personal-word ledger with editable pronunciation and JSON import/export.
+- Hold-to-talk Control or Option interaction, microphone-ready feedback, and release-to-finalize behavior.
 - Refresh of the system-default microphone for each recording, with separate audio capture and decoding.
 - Explicit phrase learning with separate ownership for generated dictionaries and runtime personal records.
 - Per-recording hotword snapshots, preserving ordinary typing statistics without automatically promoting them into speech corrections.
 - Chinese numeric formatting with protection for ordinary expressions and idioms.
 - Swift and Python regression tests for learning, input rules, streaming revisions, audio handling, and service state.
 
-These describe the maintainer's integrated local system. The source release excludes private vocabulary and external models; it is not a claim that a new user can install the complete system with one click today.
+The source tree excludes private vocabulary and model weights. The installer is built with an allowlist of public model and starter resources. Validation on the maintainer's Mac and disposable profiles does not establish compatibility on every Mac or in every application.
 
-The project is published as **Voice Fly**. Some source filenames, Swift symbols, and local component identifiers retain the earlier `VoiceFlypy` name for compatibility with the existing development system.
+The project is published as **Voice Fly**. Applications, background services, startup items, and current source modules use this name consistently.
 
 ## Repository layout
 
@@ -48,7 +61,7 @@ The project is published as **Voice Fly**. Some source filenames, Swift symbols,
 | `docs/` | Build boundaries, maintenance evidence, privacy, and Chinese introduction |
 | `licenses/` | Retained license texts for pinned upstream dependencies |
 
-`SOURCE_MANIFEST.json` records the original exported source hashes and upstream revisions. Dependency checkouts are fetched separately rather than bundled. Changes made for this public release are listed in [CHANGELOG.md](CHANGELOG.md).
+`SOURCE_MANIFEST.json` records current upstream revisions and points to the preserved original export hashes. Dependency checkouts are fetched separately rather than bundled. Changes made for this public release are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Try the reviewable parts
 
@@ -71,7 +84,7 @@ Neither command records audio, installs the input method, or starts the live ser
 
 ## Development plan
 
-The next milestones are public defaults and scheme-independent learning, visual settings and full-pinyin/Wubi choices, actionable error recovery, and a combined installer with upgrade and removal support. We aim to review progress twice weekly and publish verified updates weekly when ready. Each update should include a concrete change, validation, and remaining limitations; larger features may span multiple weeks. See [ROADMAP.md](ROADMAP.md).
+The next milestones are broader OS builds, Apple signing/notarization, independent-user trials, physical-key checks across host applications, and microphone/device recovery. We aim to review progress twice weekly and publish verified updates weekly when ready. Each update should include a concrete change, validation, and remaining limitations; larger features may span multiple weeks. See [ROADMAP.md](ROADMAP.md).
 
 ## Contributing and reporting problems
 

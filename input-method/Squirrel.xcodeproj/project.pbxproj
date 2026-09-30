@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A61F00122E69260000C0DE01 /* VoiceFlySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61F00112E69260000C0DE01 /* VoiceFlySettings.swift */; };
 		2C6B9F9D2BCD086700E327DF /* librime-lua.dylib in Copy Rime plugins */ = {isa = PBXBuildFile; fileRef = 2C6B9F9A2BCD086700E327DF /* librime-lua.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2C6B9F9E2BCD086700E327DF /* librime-octagram.dylib in Copy Rime plugins */ = {isa = PBXBuildFile; fileRef = 2C6B9F9B2BCD086700E327DF /* librime-octagram.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2C6B9F9F2BCD086700E327DF /* librime-predict.dylib in Copy Rime plugins */ = {isa = PBXBuildFile; fileRef = 2C6B9F9C2BCD086700E327DF /* librime-predict.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -36,6 +37,25 @@
 		447765CA25C30E97002415AF /* Sparkle.framework in Copy 3rd-party Frameworks */ = {isa = PBXBuildFile; fileRef = 447765C725C30E6B002415AF /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		448363DD25BDBBED0022C7BA /* pinyin.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 448363D925BDBBBF0022C7BA /* pinyin.yaml */; };
 		448363DE25BDBBED0022C7BA /* zhuyin.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 448363DA25BDBBBF0022C7BA /* zhuyin.yaml */; };
+		16352B911E21239E8BC6503C /* wubi_trad.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = EA65619FBF7E8FA0F8F1C719 /* wubi_trad.schema.yaml */; };
+		30AD4FD5CDB8E41893AC8131 /* wubi_pinyin.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 6E46051E5FF22EF165F68C7E /* wubi_pinyin.schema.yaml */; };
+		39A6AEC10A66DB372E9B6CF1 /* wubi86.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 34783FF3CAB7BF9648D37AD0 /* wubi86.schema.yaml */; };
+		D198A6809BBC3675DEA002FE /* wubi86.dict.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 1F4CDD420C7EA6820AF755D0 /* wubi86.dict.yaml */; };
+		FEE1FE998C5C595A369A5846 /* word-codes.json in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = A3AC3582814AEEBC3F5610DD /* word-codes.json */; };
+		D3D3304C892F5EFB23579CBF /* voicefly_wubiPinyin.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 877D3135549BB263F4F3C81A /* voicefly_wubiPinyin.schema.yaml */; };
+		32C658E7A88A2B116FAD4B9F /* voicefly_wubi.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 998B50D130E89135D0A81E2F /* voicefly_wubi.schema.yaml */; };
+		782DE80CAF383C4CDA0832F9 /* voicefly_pinyin.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = F1257BB2CC15AF8C799CCE59 /* voicefly_pinyin.schema.yaml */; };
+		1045D2C4C6CEC89461CAD1C9 /* voicefly_natural.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 7AE66BFCA7FC26A6A853A48F /* voicefly_natural.schema.yaml */; };
+		25CF6C03EF16312DDB12BD58 /* voicefly_microsoft.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 873D7FD83D7B21F252B58E8C /* voicefly_microsoft.schema.yaml */; };
+		8EE14AD00A4D0F6BD6D17170 /* voicefly_flypy.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 9EDC77A34EE276308A008CC3 /* voicefly_flypy.schema.yaml */; };
+		D737FFBDCEB5BCB9F81A791F /* pinyin_simp.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = EF905521CE86A21E5146811D /* pinyin_simp.schema.yaml */; };
+		2A8D8A94E9D9CC3BD206CF76 /* pinyin_simp.dict.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = EF1D38E2C1A9FD01ACA0B81D /* pinyin_simp.dict.yaml */; };
+		371EC6B29F4A4A214D6D1516 /* double_pinyin_st.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 9974B69C74274B29E8A953A7 /* double_pinyin_st.schema.yaml */; };
+		5413BE54F2519FB32144C9DC /* double_pinyin_pyjj.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 3026DF14DA163A6B5F09CB7C /* double_pinyin_pyjj.schema.yaml */; };
+		3B3899AFBB03C0B80AFCB29F /* double_pinyin_mspy.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 275F40B9C19AEAE4525BDD4E /* double_pinyin_mspy.schema.yaml */; };
+		AF450F05E966E4E17F313317 /* double_pinyin_flypy.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = CAB75DB96CEBD33C7A9C085A /* double_pinyin_flypy.schema.yaml */; };
+		900A798D4D510E57806E0033 /* double_pinyin_abc.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = FE48B80F502F25AF7560F11F /* double_pinyin_abc.schema.yaml */; };
+		A99DC3D19BCDC397A1CB24DE /* double_pinyin.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 37258E9A60767A084BA01F20 /* double_pinyin.schema.yaml */; };
 		44986A95184B421700B3278D /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 44986A93184B421700B3278D /* LICENSE.txt */; };
 		44986A96184B421700B3278D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 44986A94184B421700B3278D /* README.md */; };
 		44AEBC7521F569FD00344375 /* key_bindings.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 44AEBC7221F569CF00344375 /* key_bindings.yaml */; };
@@ -80,12 +100,12 @@
 		7B5488C01D2DACDF0056A1BE /* luna_pinyin.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 7B5488321D2DAAD10056A1BE /* luna_pinyin.schema.yaml */; };
 		7B5488C11D2DACDF0056A1BE /* luna_quanpin.schema.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 7B5488331D2DAAD10056A1BE /* luna_quanpin.schema.yaml */; };
 		7B5488C91D2DACDF0056A1BE /* symbols.yaml in Copy Shared Support Files */ = {isa = PBXBuildFile; fileRef = 7B54883B1D2DAAD10056A1BE /* symbols.yaml */; };
-		B3216E5C2BF438F800E292D2 /* rime.pdf in Resources */ = {isa = PBXBuildFile; fileRef = B3216E5B2BF438F800E292D2 /* rime.pdf */; };
+		B3216E5C2BF438F800E292D2 /* voicefly-menu-badge-mask.pdf in Resources */ = {isa = PBXBuildFile; fileRef = B3216E5B2BF438F800E292D2 /* voicefly-menu-badge-mask.pdf */; };
 		B35D2FE82BF00839009D156B /* BridgingFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35D2FE72BF00839009D156B /* BridgingFunctions.swift */; };
 		B3A001022F260100009D156B /* ReservedProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A001012F260100009D156B /* ReservedProperty.swift */; };
 		B38E9B912BE9AE1E0036ABEF /* SquirrelApplicationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38E9B902BE9AE1E0036ABEF /* SquirrelApplicationDelegate.swift */; };
 		B38E9B952BEAFEFD0036ABEF /* SquirrelInputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38E9B942BEAFEFD0036ABEF /* SquirrelInputController.swift */; };
-		A61F00022E69260000C0DE01 /* VoiceFlypyLearning.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61F00012E69260000C0DE01 /* VoiceFlypyLearning.swift */; };
+		A61F00022E69260000C0DE01 /* VoiceFlyLearning.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61F00012E69260000C0DE01 /* VoiceFlyLearning.swift */; };
 		B39771232BECEA150093A49B /* MacOSKeyCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39771222BECEA150093A49B /* MacOSKeyCodes.swift */; };
 		B39771252BED899F0093A49B /* SquirrelConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39771242BED899F0093A49B /* SquirrelConfig.swift */; };
 		B39771272BED9B250093A49B /* SquirrelTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39771262BED9B250093A49B /* SquirrelTheme.swift */; };
@@ -95,7 +115,7 @@
 		B397712F2BEECBED0093A49B /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B397712E2BEECBED0093A49B /* Main.swift */; };
 		B39771312BEEE4540093A49B /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B39771302BEEE4540093A49B /* InfoPlist.xcstrings */; };
 		B39771332BEEE4540093A49B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B39771322BEEE4540093A49B /* Localizable.xcstrings */; };
-		B3EF08EA2F17125E00433A45 /* Rime.icon in Resources */ = {isa = PBXBuildFile; fileRef = B3EF08E92F17125E00433A45 /* Rime.icon */; };
+		B3EF08EA2F17125E00433A45 /* VoiceFly.icon in Resources */ = {isa = PBXBuildFile; fileRef = B3EF08E92F17125E00433A45 /* VoiceFly.icon */; };
 		D26434552706A15100857391 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D26434542706A15100857391 /* QuartzCore.framework */; };
 		E93074B70A5C264700470842 /* InputMethodKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E93074B60A5C264700470842 /* InputMethodKit.framework */; };
 		F45E005F2B8CA81C00179B75 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45E005E2B8CA81C00179B75 /* UserNotifications.framework */; };
@@ -161,6 +181,25 @@
 			files = (
 				448363DD25BDBBED0022C7BA /* pinyin.yaml in Copy Shared Support Files */,
 				448363DE25BDBBED0022C7BA /* zhuyin.yaml in Copy Shared Support Files */,
+				16352B911E21239E8BC6503C /* wubi_trad.schema.yaml in Copy Shared Support Files */,
+				30AD4FD5CDB8E41893AC8131 /* wubi_pinyin.schema.yaml in Copy Shared Support Files */,
+				39A6AEC10A66DB372E9B6CF1 /* wubi86.schema.yaml in Copy Shared Support Files */,
+				D198A6809BBC3675DEA002FE /* wubi86.dict.yaml in Copy Shared Support Files */,
+				FEE1FE998C5C595A369A5846 /* word-codes.json in Copy Shared Support Files */,
+				D3D3304C892F5EFB23579CBF /* voicefly_wubiPinyin.schema.yaml in Copy Shared Support Files */,
+				32C658E7A88A2B116FAD4B9F /* voicefly_wubi.schema.yaml in Copy Shared Support Files */,
+				782DE80CAF383C4CDA0832F9 /* voicefly_pinyin.schema.yaml in Copy Shared Support Files */,
+				1045D2C4C6CEC89461CAD1C9 /* voicefly_natural.schema.yaml in Copy Shared Support Files */,
+				25CF6C03EF16312DDB12BD58 /* voicefly_microsoft.schema.yaml in Copy Shared Support Files */,
+				8EE14AD00A4D0F6BD6D17170 /* voicefly_flypy.schema.yaml in Copy Shared Support Files */,
+				D737FFBDCEB5BCB9F81A791F /* pinyin_simp.schema.yaml in Copy Shared Support Files */,
+				2A8D8A94E9D9CC3BD206CF76 /* pinyin_simp.dict.yaml in Copy Shared Support Files */,
+				371EC6B29F4A4A214D6D1516 /* double_pinyin_st.schema.yaml in Copy Shared Support Files */,
+				5413BE54F2519FB32144C9DC /* double_pinyin_pyjj.schema.yaml in Copy Shared Support Files */,
+				3B3899AFBB03C0B80AFCB29F /* double_pinyin_mspy.schema.yaml in Copy Shared Support Files */,
+				AF450F05E966E4E17F313317 /* double_pinyin_flypy.schema.yaml in Copy Shared Support Files */,
+				900A798D4D510E57806E0033 /* double_pinyin_abc.schema.yaml in Copy Shared Support Files */,
+				A99DC3D19BCDC397A1CB24DE /* double_pinyin.schema.yaml in Copy Shared Support Files */,
 				441E637722B7E96F006DCCDD /* bopomofo_express.schema.yaml in Copy Shared Support Files */,
 				441E637822B7E96F006DCCDD /* bopomofo_tw.schema.yaml in Copy Shared Support Files */,
 				441E637922B7E96F006DCCDD /* bopomofo.schema.yaml in Copy Shared Support Files */,
@@ -223,6 +262,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A61F00112E69260000C0DE01 /* VoiceFlySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceFlySettings.swift; path = VoiceFlyCore/VoiceFlySettings.swift; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -251,6 +291,25 @@
 		447765C725C30E6B002415AF /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		448363D925BDBBBF0022C7BA /* pinyin.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = pinyin.yaml; path = data/plum/pinyin.yaml; sourceTree = "<group>"; };
 		448363DA25BDBBBF0022C7BA /* zhuyin.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = zhuyin.yaml; path = data/plum/zhuyin.yaml; sourceTree = "<group>"; };
+		EA65619FBF7E8FA0F8F1C719 /* wubi_trad.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = wubi_trad.schema.yaml; path = data/plum/wubi_trad.schema.yaml; sourceTree = "<group>"; };
+		6E46051E5FF22EF165F68C7E /* wubi_pinyin.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = wubi_pinyin.schema.yaml; path = data/plum/wubi_pinyin.schema.yaml; sourceTree = "<group>"; };
+		34783FF3CAB7BF9648D37AD0 /* wubi86.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = wubi86.schema.yaml; path = data/plum/wubi86.schema.yaml; sourceTree = "<group>"; };
+		1F4CDD420C7EA6820AF755D0 /* wubi86.dict.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = wubi86.dict.yaml; path = data/plum/wubi86.dict.yaml; sourceTree = "<group>"; };
+		A3AC3582814AEEBC3F5610DD /* word-codes.json */ = {isa = PBXFileReference; lastKnownFileType = file; name = "word-codes.json"; path = "data/plum/word-codes.json"; sourceTree = "<group>"; };
+		877D3135549BB263F4F3C81A /* voicefly_wubiPinyin.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = voicefly_wubiPinyin.schema.yaml; path = data/plum/voicefly_wubiPinyin.schema.yaml; sourceTree = "<group>"; };
+		998B50D130E89135D0A81E2F /* voicefly_wubi.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = voicefly_wubi.schema.yaml; path = data/plum/voicefly_wubi.schema.yaml; sourceTree = "<group>"; };
+		F1257BB2CC15AF8C799CCE59 /* voicefly_pinyin.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = voicefly_pinyin.schema.yaml; path = data/plum/voicefly_pinyin.schema.yaml; sourceTree = "<group>"; };
+		7AE66BFCA7FC26A6A853A48F /* voicefly_natural.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = voicefly_natural.schema.yaml; path = data/plum/voicefly_natural.schema.yaml; sourceTree = "<group>"; };
+		873D7FD83D7B21F252B58E8C /* voicefly_microsoft.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = voicefly_microsoft.schema.yaml; path = data/plum/voicefly_microsoft.schema.yaml; sourceTree = "<group>"; };
+		9EDC77A34EE276308A008CC3 /* voicefly_flypy.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = voicefly_flypy.schema.yaml; path = data/plum/voicefly_flypy.schema.yaml; sourceTree = "<group>"; };
+		EF905521CE86A21E5146811D /* pinyin_simp.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = pinyin_simp.schema.yaml; path = data/plum/pinyin_simp.schema.yaml; sourceTree = "<group>"; };
+		EF1D38E2C1A9FD01ACA0B81D /* pinyin_simp.dict.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = pinyin_simp.dict.yaml; path = data/plum/pinyin_simp.dict.yaml; sourceTree = "<group>"; };
+		9974B69C74274B29E8A953A7 /* double_pinyin_st.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = double_pinyin_st.schema.yaml; path = data/plum/double_pinyin_st.schema.yaml; sourceTree = "<group>"; };
+		3026DF14DA163A6B5F09CB7C /* double_pinyin_pyjj.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = double_pinyin_pyjj.schema.yaml; path = data/plum/double_pinyin_pyjj.schema.yaml; sourceTree = "<group>"; };
+		275F40B9C19AEAE4525BDD4E /* double_pinyin_mspy.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = double_pinyin_mspy.schema.yaml; path = data/plum/double_pinyin_mspy.schema.yaml; sourceTree = "<group>"; };
+		CAB75DB96CEBD33C7A9C085A /* double_pinyin_flypy.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = double_pinyin_flypy.schema.yaml; path = data/plum/double_pinyin_flypy.schema.yaml; sourceTree = "<group>"; };
+		FE48B80F502F25AF7560F11F /* double_pinyin_abc.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = double_pinyin_abc.schema.yaml; path = data/plum/double_pinyin_abc.schema.yaml; sourceTree = "<group>"; };
+		37258E9A60767A084BA01F20 /* double_pinyin.schema.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; name = double_pinyin.schema.yaml; path = data/plum/double_pinyin.schema.yaml; sourceTree = "<group>"; };
 		44986A93184B421700B3278D /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		44986A94184B421700B3278D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		44AEBC7121F569CF00344375 /* punctuation.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = punctuation.yaml; path = data/plum/punctuation.yaml; sourceTree = "<group>"; };
@@ -258,7 +317,7 @@
 		44CD640915E2633D0021234E /* librime.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = librime.1.dylib; path = lib/librime.1.dylib; sourceTree = "<group>"; };
 		44E21A8E16A653E700C2B08F /* rime_deployer */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = rime_deployer; path = bin/rime_deployer; sourceTree = "<group>"; };
 		44E21A8F16A653E700C2B08F /* rime_dict_manager */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = rime_dict_manager; path = bin/rime_dict_manager; sourceTree = "<group>"; };
-		44F1EB381431F8270015FD04 /* VoiceFlypy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceFlypy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		44F1EB381431F8270015FD04 /* VoiceFly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceFly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77AA67DC2588916300A592E2 /* HKVariants.ocd2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = HKVariants.ocd2; sourceTree = "<group>"; };
 		77AA67DD2588916300A592E2 /* t2s.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = t2s.json; sourceTree = "<group>"; };
 		77AA67DE2588916300A592E2 /* t2tw.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = t2tw.json; sourceTree = "<group>"; };
@@ -298,14 +357,14 @@
 		7B54883B1D2DAAD10056A1BE /* symbols.yaml */ = {isa = PBXFileReference; lastKnownFileType = text; name = symbols.yaml; path = data/plum/symbols.yaml; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = resources/Info.plist; sourceTree = "<group>"; };
 		A4B8E1B20F645B870094E08B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		B3216E5B2BF438F800E292D2 /* rime.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = rime.pdf; path = resources/rime.pdf; sourceTree = "<group>"; };
+		B3216E5B2BF438F800E292D2 /* voicefly-menu-badge-mask.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = voicefly-menu-badge-mask.pdf; path = resources/branding/voicefly-menu-badge-mask.pdf; sourceTree = "<group>"; };
 		B32B80772BE7FAA200FCF3BC /* Squirrel.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = Squirrel.entitlements; path = resources/Squirrel.entitlements; sourceTree = "<group>"; };
 		B35D2FE72BF00839009D156B /* BridgingFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BridgingFunctions.swift; path = sources/BridgingFunctions.swift; sourceTree = "<group>"; };
 		B3A001012F260100009D156B /* ReservedProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReservedProperty.swift; path = sources/ReservedProperty.swift; sourceTree = "<group>"; };
 		B38E9B8F2BE9AE1E0036ABEF /* Squirrel-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Squirrel-Bridging-Header.h"; path = "sources/Squirrel-Bridging-Header.h"; sourceTree = "<group>"; };
 		B38E9B902BE9AE1E0036ABEF /* SquirrelApplicationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SquirrelApplicationDelegate.swift; path = sources/SquirrelApplicationDelegate.swift; sourceTree = "<group>"; };
 		B38E9B942BEAFEFD0036ABEF /* SquirrelInputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SquirrelInputController.swift; path = sources/SquirrelInputController.swift; sourceTree = "<group>"; };
-		A61F00012E69260000C0DE01 /* VoiceFlypyLearning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceFlypyLearning.swift; path = VoiceFlypyCore/VoiceFlypyLearning.swift; sourceTree = "<group>"; };
+		A61F00012E69260000C0DE01 /* VoiceFlyLearning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceFlyLearning.swift; path = VoiceFlyCore/VoiceFlyLearning.swift; sourceTree = "<group>"; };
 		B39771222BECEA150093A49B /* MacOSKeyCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MacOSKeyCodes.swift; path = sources/MacOSKeyCodes.swift; sourceTree = "<group>"; };
 		B39771242BED899F0093A49B /* SquirrelConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SquirrelConfig.swift; path = sources/SquirrelConfig.swift; sourceTree = "<group>"; };
 		B39771262BED9B250093A49B /* SquirrelTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SquirrelTheme.swift; path = sources/SquirrelTheme.swift; sourceTree = "<group>"; };
@@ -315,7 +374,7 @@
 		B397712E2BEECBED0093A49B /* Main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Main.swift; path = sources/Main.swift; sourceTree = "<group>"; };
 		B39771302BEEE4540093A49B /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = InfoPlist.xcstrings; path = resources/InfoPlist.xcstrings; sourceTree = "<group>"; };
 		B39771322BEEE4540093A49B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = Localizable.xcstrings; path = resources/Localizable.xcstrings; sourceTree = "<group>"; };
-		B3EF08E92F17125E00433A45 /* Rime.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Rime.icon; sourceTree = "<group>"; };
+		B3EF08E92F17125E00433A45 /* VoiceFly.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = VoiceFly.icon; sourceTree = "<group>"; };
 		D26434542706A15100857391 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		E93074B60A5C264700470842 /* InputMethodKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = InputMethodKit.framework; path = /System/Library/Frameworks/InputMethodKit.framework; sourceTree = "<absolute>"; };
 		F45E005E2B8CA81C00179B75 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
@@ -339,7 +398,8 @@
 		080E96DDFE201D6D7F000001 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				A61F00012E69260000C0DE01 /* VoiceFlypyLearning.swift */,
+				A61F00012E69260000C0DE01 /* VoiceFlyLearning.swift */,
+				A61F00112E69260000C0DE01 /* VoiceFlySettings.swift */,
 				B38E9B902BE9AE1E0036ABEF /* SquirrelApplicationDelegate.swift */,
 				B38E9B942BEAFEFD0036ABEF /* SquirrelInputController.swift */,
 				B39771222BECEA150093A49B /* MacOSKeyCodes.swift */,
@@ -380,7 +440,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				44F1EB381431F8270015FD04 /* VoiceFlypy.app */,
+				44F1EB381431F8270015FD04 /* VoiceFly.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -406,7 +466,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				B3216E5B2BF438F800E292D2 /* rime.pdf */,
+				B3216E5B2BF438F800E292D2 /* voicefly-menu-badge-mask.pdf */,
 				44986A93184B421700B3278D /* LICENSE.txt */,
 				44986A94184B421700B3278D /* README.md */,
 				B39771322BEEE4540093A49B /* Localizable.xcstrings */,
@@ -414,7 +474,7 @@
 				B32B80772BE7FAA200FCF3BC /* Squirrel.entitlements */,
 				B39771302BEEE4540093A49B /* InfoPlist.xcstrings */,
 				446C01D61F767BD400A6C23E /* Assets.xcassets */,
-				B3EF08E92F17125E00433A45 /* Rime.icon */,
+				B3EF08E92F17125E00433A45 /* VoiceFly.icon */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -491,6 +551,25 @@
 			children = (
 				448363D925BDBBBF0022C7BA /* pinyin.yaml */,
 				448363DA25BDBBBF0022C7BA /* zhuyin.yaml */,
+				EA65619FBF7E8FA0F8F1C719 /* wubi_trad.schema.yaml */,
+				6E46051E5FF22EF165F68C7E /* wubi_pinyin.schema.yaml */,
+				34783FF3CAB7BF9648D37AD0 /* wubi86.schema.yaml */,
+				1F4CDD420C7EA6820AF755D0 /* wubi86.dict.yaml */,
+				A3AC3582814AEEBC3F5610DD /* word-codes.json */,
+				877D3135549BB263F4F3C81A /* voicefly_wubiPinyin.schema.yaml */,
+				998B50D130E89135D0A81E2F /* voicefly_wubi.schema.yaml */,
+				F1257BB2CC15AF8C799CCE59 /* voicefly_pinyin.schema.yaml */,
+				7AE66BFCA7FC26A6A853A48F /* voicefly_natural.schema.yaml */,
+				873D7FD83D7B21F252B58E8C /* voicefly_microsoft.schema.yaml */,
+				9EDC77A34EE276308A008CC3 /* voicefly_flypy.schema.yaml */,
+				EF905521CE86A21E5146811D /* pinyin_simp.schema.yaml */,
+				EF1D38E2C1A9FD01ACA0B81D /* pinyin_simp.dict.yaml */,
+				9974B69C74274B29E8A953A7 /* double_pinyin_st.schema.yaml */,
+				3026DF14DA163A6B5F09CB7C /* double_pinyin_pyjj.schema.yaml */,
+				275F40B9C19AEAE4525BDD4E /* double_pinyin_mspy.schema.yaml */,
+				CAB75DB96CEBD33C7A9C085A /* double_pinyin_flypy.schema.yaml */,
+				FE48B80F502F25AF7560F11F /* double_pinyin_abc.schema.yaml */,
+				37258E9A60767A084BA01F20 /* double_pinyin.schema.yaml */,
 				441E636C22B7E90D006DCCDD /* bopomofo_express.schema.yaml */,
 				441E636722B7E90D006DCCDD /* bopomofo_tw.schema.yaml */,
 				441E636822B7E90D006DCCDD /* bopomofo.schema.yaml */,
@@ -550,7 +629,7 @@
 			);
 			productInstallPath = "$(HOME)/Applications";
 			productName = Squirrel;
-			productReference = 44F1EB381431F8270015FD04 /* VoiceFlypy.app */;
+			productReference = 44F1EB381431F8270015FD04 /* VoiceFly.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -594,12 +673,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				446C01D71F767BD400A6C23E /* Assets.xcassets in Resources */,
-				B3EF08EA2F17125E00433A45 /* Rime.icon in Resources */,
+				B3EF08EA2F17125E00433A45 /* VoiceFly.icon in Resources */,
 				B39771312BEEE4540093A49B /* InfoPlist.xcstrings in Resources */,
 				44986A95184B421700B3278D /* LICENSE.txt in Resources */,
 				B39771332BEEE4540093A49B /* Localizable.xcstrings in Resources */,
 				44986A96184B421700B3278D /* README.md in Resources */,
-				B3216E5C2BF438F800E292D2 /* rime.pdf in Resources */,
+				B3216E5C2BF438F800E292D2 /* voicefly-menu-badge-mask.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -610,7 +689,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A61F00022E69260000C0DE01 /* VoiceFlypyLearning.swift in Sources */,
+				A61F00022E69260000C0DE01 /* VoiceFlyLearning.swift in Sources */,
+				A61F00122E69260000C0DE01 /* VoiceFlySettings.swift in Sources */,
 				B39771232BECEA150093A49B /* MacOSKeyCodes.swift in Sources */,
 				B39771292BEDAF4A0093A49B /* SquirrelView.swift in Sources */,
 				B38E9B952BEAFEFD0036ABEF /* SquirrelInputController.swift in Sources */,
@@ -631,7 +711,7 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Rime;
+				ASSETCATALOG_COMPILER_APPICON_NAME = VoiceFly;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_FRAMEWORKS = AppKit;
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -639,7 +719,7 @@
 				CODE_SIGN_ENTITLEMENTS = resources/Squirrel.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.2.0;
+				CURRENT_PROJECT_VERSION = 26;
 				DEAD_CODE_STRIPPING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -654,7 +734,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "VoiceFlypy Input Method";
+				INFOPLIST_KEY_CFBundleDisplayName = "Voice Fly";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INSTALL_PATH = "\"/Library/Input Methods\"";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -674,10 +754,11 @@
 					"$(OTHER_CPLUSPLUSFLAGS_QUOTED_FOR_TARGET_2)",
 				);
 				OTHER_LDFLAGS = "-lrime.1";
-				PRODUCT_BUNDLE_IDENTIFIER = com.simonli.inputmethod.VoiceFlypy;
-				EXECUTABLE_NAME = Squirrel;
-				PRODUCT_NAME = VoiceFlypy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.simonli.inputmethod.VoiceFly;
+				EXECUTABLE_NAME = VoiceFlyInput;
+				PRODUCT_NAME = VoiceFly;
 				PRODUCT_MODULE_NAME = Squirrel;
+				REGISTER_APP_ON_POSTPROCESSING = NO;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/Squirrel-Bridging-Header.h";
@@ -690,14 +771,14 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Rime;
+				ASSETCATALOG_COMPILER_APPICON_NAME = VoiceFly;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_FRAMEWORKS = AppKit;
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = resources/Squirrel.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1.2.0;
+				CURRENT_PROJECT_VERSION = 26;
 				DEAD_CODE_STRIPPING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -711,7 +792,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "VoiceFlypy Input Method";
+				INFOPLIST_KEY_CFBundleDisplayName = "Voice Fly";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INSTALL_PATH = "\"/Library/Input Methods\"";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -731,10 +812,11 @@
 					"$(OTHER_CPLUSPLUSFLAGS_QUOTED_FOR_TARGET_2)",
 				);
 				OTHER_LDFLAGS = "-lrime.1";
-				PRODUCT_BUNDLE_IDENTIFIER = com.simonli.inputmethod.VoiceFlypy;
-				EXECUTABLE_NAME = Squirrel;
-				PRODUCT_NAME = VoiceFlypy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.simonli.inputmethod.VoiceFly;
+				EXECUTABLE_NAME = VoiceFlyInput;
+				PRODUCT_NAME = VoiceFly;
 				PRODUCT_MODULE_NAME = Squirrel;
+				REGISTER_APP_ON_POSTPROCESSING = NO;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/Squirrel-Bridging-Header.h";
@@ -747,7 +829,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_APPICON_NAME = RimeIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = VoiceFlyIcon;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -806,7 +888,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_APPICON_NAME = RimeIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = VoiceFlyIcon;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;

@@ -48,7 +48,7 @@
         }
       }
     },
-    "com.simonli.inputmethod.VoiceFlypy" : {
+    "com.simonli.inputmethod.VoiceFly" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -71,7 +71,7 @@
         }
       }
     },
-    "com.simonli.inputmethod.VoiceFlypy.Hans" : {
+    "com.simonli.inputmethod.VoiceFly.Hans" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

@@ -11,7 +11,7 @@ data/opencc/
 data/plum/
 download/
 package/Squirrel*.pkg
-package/VoiceFlypy*.pkg
+package/VoiceFly*.pkg
 package/sign/*.pem
 package/test-*
 package/generate_keys

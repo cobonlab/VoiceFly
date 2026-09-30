@@ -248,7 +248,7 @@ class SherpaProviderIdentityTests(unittest.TestCase):
                     )
                     self.assertEqual(
                         identity["normalization"]["entrypoint"],
-                        "voice_flypy_service.normalize",
+                        "voice_fly_service.normalize",
                     )
                     self.assertEqual(
                         identity["normalization"]["itn_cache_policy"],
@@ -584,7 +584,7 @@ class SherpaProviderIdentityTests(unittest.TestCase):
         self.assertNotIn("private", str(caught.exception))
 
     def test_sherpa_output_uses_production_memory_only_silent_normalization(self):
-        import voice_flypy_service as service
+        import voice_fly_service as service
         import voice_personal_phonetics as personal
 
         audio = REFINER.AudioSnapshot(np.zeros(160, dtype=np.float32), 16000)
@@ -599,7 +599,7 @@ class SherpaProviderIdentityTests(unittest.TestCase):
             missing_personal_usage = root / "missing-personal-usage.json"
             with mock.patch.dict(
                 service.os.environ,
-                {"VOICEFLYPY_PERSONAL_USAGE": str(missing_personal_usage)},
+                {"VOICEFLY_PERSONAL_USAGE": str(missing_personal_usage)},
             ):
                 personal._reset_personal_phonetic_cache_for_tests()
                 provider = self.make_provider(
@@ -1142,7 +1142,7 @@ class EvaluationReportTests(unittest.TestCase):
             config = EVAL.EvaluationConfig(
                 dataset_root=config.dataset_root,
                 manifest_path=config.manifest_path,
-                baseline=EVAL.BackendSpec(EVAL.VOICEFLYPY_X_ASR_FAMILY),
+                baseline=EVAL.BackendSpec(EVAL.VOICEFLY_X_ASR_FAMILY),
                 second_model=config.second_model,
                 timeout_seconds=config.timeout_seconds,
                 max_audio_seconds=config.max_audio_seconds,
@@ -1160,7 +1160,7 @@ class EvaluationReportTests(unittest.TestCase):
             report = EVAL.run_evaluation(
                 config,
                 baseline_provider=FakeProvider(
-                    "voiceflypy_x_asr",
+                    "voicefly_x_asr",
                     {"sample": "\u771f\u503c"},
                     identity=identity,
                 ),
@@ -1171,7 +1171,7 @@ class EvaluationReportTests(unittest.TestCase):
                 dataset_root=root,
                 manifest_path=manifest,
                 baseline=EVAL.BackendSpec("paraformer", root / "baseline"),
-                second_model=EVAL.BackendSpec(EVAL.VOICEFLYPY_X_ASR_FAMILY),
+                second_model=EVAL.BackendSpec(EVAL.VOICEFLY_X_ASR_FAMILY),
             )
             with self.assertRaises(EVAL.EvaluationInputError) as raised:
                 EVAL.run_evaluation(

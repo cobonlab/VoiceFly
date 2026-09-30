@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="1">
-    <title>VoiceFlypy @VERSION@</title>
+    <title>VoiceFly @VERSION@</title>
     <conclusion file="conclusion.html" mime-type="text/html"/>
-    <pkg-ref id="com.simonli.inputmethod.VoiceFlypy.pkg"/>
+    <pkg-ref id="com.simonli.inputmethod.VoiceFly.pkg"/>
     <options customize="never" hostArchitectures="arm64" require-scripts="false" rootVolumeOnly="true"/>
     <choices-outline>
         <line choice="default">
-            <line choice="com.simonli.inputmethod.VoiceFlypy.pkg"/>
+            <line choice="com.simonli.inputmethod.VoiceFly.pkg"/>
         </line>
     </choices-outline>
     <choice id="default"/>
-    <choice id="com.simonli.inputmethod.VoiceFlypy.pkg" visible="false">
-        <pkg-ref id="com.simonli.inputmethod.VoiceFlypy.pkg"/>
+    <choice id="com.simonli.inputmethod.VoiceFly.pkg" visible="false">
+        <pkg-ref id="com.simonli.inputmethod.VoiceFly.pkg"/>
     </choice>
-    <pkg-ref id="com.simonli.inputmethod.VoiceFlypy.pkg" onConclusion="RequireLogout">VoiceFlypy-component.pkg</pkg-ref>
+    <pkg-ref id="com.simonli.inputmethod.VoiceFly.pkg" onConclusion="RequireLogout">VoiceFly-component.pkg</pkg-ref>
 </installer-gui-script>

@@ -1,4 +1,4 @@
-"""CoreAudio input selection and speech-onset protection for VoiceFlypy."""
+"""CoreAudio input selection and speech-onset protection for VoiceFly."""
 
 from collections import deque
 from dataclasses import dataclass

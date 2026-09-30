@@ -1,4 +1,4 @@
-"""Explicit, one-clip recorder for the VoiceFlypy semantic-refiner dataset.
+"""Explicit, one-clip recorder for the VoiceFly semantic-refiner dataset.
 
 Importing this module has no microphone side effects.  A microphone is opened
 only when :func:`capture_one` is called without an injected ``audio_source`` or
@@ -599,7 +599,7 @@ def capture_one(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Record exactly one local VoiceFlypy semantic-refiner clip."
+        description="Record exactly one local VoiceFly semantic-refiner clip."
     )
     parser.add_argument("clip_id", choices=sorted(ALLOWED_CLIP_IDS))
     parser.add_argument("--output-root", required=True)

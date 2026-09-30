@@ -1,4 +1,4 @@
-"""Read-only adapter for VoiceFlypy's production streaming X-ASR path.
+"""Read-only adapter for VoiceFly's production streaming X-ASR path.
 
 The adapter deliberately does not construct ``VoiceService`` and never opens
 an input device.  It imports the service lazily, reuses the production model
@@ -41,7 +41,7 @@ from voice_hotwords import (
 )
 
 
-FAMILY = "voiceflypy_x_asr"
+FAMILY = "voicefly_x_asr"
 FRAME_DURATION_SECONDS = 0.1
 REQUIRED_MODEL_FILES = (
     "tokens.txt",
@@ -71,7 +71,7 @@ _PRIVATE_XASR_IDENTITY_FIELDS = (
 )
 
 
-class VoiceFlypyXASRError(RuntimeError):
+class VoiceFlyXASRError(RuntimeError):
     """A machine-readable provider failure without transcript contents."""
 
     def __init__(self, code: str) -> None:
@@ -79,11 +79,11 @@ class VoiceFlypyXASRError(RuntimeError):
         self.code = code
 
 
-class VoiceFlypyXASRLoadError(VoiceFlypyXASRError):
+class VoiceFlyXASRLoadError(VoiceFlyXASRError):
     """The production model/configuration could not be loaded faithfully."""
 
 
-class VoiceFlypyXASRStreamError(VoiceFlypyXASRError):
+class VoiceFlyXASRStreamError(VoiceFlyXASRError):
     """One in-memory recognition stream could not be run."""
 
 
@@ -110,7 +110,7 @@ def _stable_file_fingerprint(path: Path) -> dict[str, Any]:
             digest.update(chunk)
         after = os.fstat(descriptor)
     except OSError as exc:
-        raise VoiceFlypyXASRLoadError("x_asr_identity_read_failed") from exc
+        raise VoiceFlyXASRLoadError("x_asr_identity_read_failed") from exc
     finally:
         if descriptor >= 0:
             os.close(descriptor)
@@ -129,7 +129,7 @@ def _stable_file_fingerprint(path: Path) -> dict[str, Any]:
         after.st_ctime_ns,
     )
     if signature_before != signature_after or total != after.st_size:
-        raise VoiceFlypyXASRLoadError("x_asr_identity_changed_during_read")
+        raise VoiceFlyXASRLoadError("x_asr_identity_changed_during_read")
     return {
         "sha256": digest.hexdigest(),
         "bytes": after.st_size,
@@ -168,7 +168,7 @@ def _decoder_asset_fingerprint(
         return None
     value = getattr(decoder, attribute, None)
     if value is None:
-        raise VoiceFlypyXASRLoadError(missing_code)
+        raise VoiceFlyXASRLoadError(missing_code)
     return _stable_file_fingerprint(Path(value))
 
 
@@ -182,7 +182,7 @@ def _safe_decoder_record(
     bpe_sha256 = None
     if bool(getattr(decoder, "enabled", False)):
         if bpe_path is None:
-            raise VoiceFlypyXASRLoadError("x_asr_decoder_bpe_missing")
+            raise VoiceFlyXASRLoadError("x_asr_decoder_bpe_missing")
         if bpe_fingerprint is None:
             bpe_fingerprint = _stable_file_fingerprint(Path(bpe_path))
         bpe_sha256 = str(bpe_fingerprint["sha256"])
@@ -210,9 +210,9 @@ def _distribution_version(name: str) -> str:
     try:
         version = importlib_metadata.version(name)
     except (importlib_metadata.PackageNotFoundError, OSError, ValueError) as exc:
-        raise VoiceFlypyXASRLoadError("x_asr_runtime_version_unavailable") from exc
+        raise VoiceFlyXASRLoadError("x_asr_runtime_version_unavailable") from exc
     if not isinstance(version, str) or _SAFE_RUNTIME_VERSION_RE.fullmatch(version) is None:
-        raise VoiceFlypyXASRLoadError("x_asr_runtime_version_invalid")
+        raise VoiceFlyXASRLoadError("x_asr_runtime_version_invalid")
     return version
 
 
@@ -227,7 +227,7 @@ def _semantic_resource_identity(
         not isinstance(entries, (tuple, list))
         or len(entries) > _MAX_NORMALIZATION_RESOURCE_ENTRIES
     ):
-        raise VoiceFlypyXASRLoadError("x_asr_normalization_resource_invalid")
+        raise VoiceFlyXASRLoadError("x_asr_normalization_resource_invalid")
     canonical_entries: list[list[str]] = []
     encoded_entry_bytes = 0
 
@@ -237,7 +237,7 @@ def _semantic_resource_identity(
             sum(len(item) for item in entry)
             > _MAX_NORMALIZATION_RESOURCE_IDENTITY_BYTES
         ):
-            raise VoiceFlypyXASRLoadError(
+            raise VoiceFlyXASRLoadError(
                 "x_asr_normalization_resource_invalid"
             )
         encoded = json.dumps(
@@ -247,7 +247,7 @@ def _semantic_resource_identity(
         ).encode("utf-8")
         encoded_entry_bytes += len(encoded) + 1
         if encoded_entry_bytes > _MAX_NORMALIZATION_RESOURCE_IDENTITY_BYTES:
-            raise VoiceFlypyXASRLoadError(
+            raise VoiceFlyXASRLoadError(
                 "x_asr_normalization_resource_invalid"
             )
         canonical_entries.append(entry)
@@ -255,7 +255,7 @@ def _semantic_resource_identity(
     if row_width == 1:
         for entry in entries:
             if not isinstance(entry, str):
-                raise VoiceFlypyXASRLoadError(
+                raise VoiceFlyXASRLoadError(
                     "x_asr_normalization_resource_invalid"
                 )
             append_entry([entry])
@@ -266,13 +266,13 @@ def _semantic_resource_identity(
                 or len(entry) != row_width
                 or not all(isinstance(item, str) for item in entry)
             ):
-                raise VoiceFlypyXASRLoadError(
+                raise VoiceFlyXASRLoadError(
                     "x_asr_normalization_resource_invalid"
                 )
             append_entry(list(entry))
     payload = json.dumps(
         {
-            "schema": "voiceflypy-normalization-resource-v1",
+            "schema": "voicefly-normalization-resource-v1",
             "role": role,
             "entries": canonical_entries,
         },
@@ -281,7 +281,7 @@ def _semantic_resource_identity(
         separators=(",", ":"),
     ).encode("utf-8")
     if len(payload) > _MAX_NORMALIZATION_RESOURCE_IDENTITY_BYTES:
-        raise VoiceFlypyXASRLoadError("x_asr_normalization_resource_invalid")
+        raise VoiceFlyXASRLoadError("x_asr_normalization_resource_invalid")
     return {
         "entry_count": len(canonical_entries),
         "semantic_sha256": hashlib.sha256(payload).hexdigest(),
@@ -339,7 +339,7 @@ def _resolve_decoder_readonly(
     if explicit_combined:
         combined_candidates.append(Path(explicit_combined).expanduser())
     combined_candidates.append(
-        Path.home() / "Library/Caches/VoiceFlypy/lexicon/combined_hotwords.txt"
+        Path.home() / "Library/Caches/VoiceFly/lexicon/combined_hotwords.txt"
     )
     hotwords = _first_valid_readonly(combined_candidates, validate_hotwords)
     source = "existing_combined_snapshot"
@@ -379,7 +379,7 @@ def _normalization_identity(service: Any) -> dict[str, Any]:
     """Identify production normalization code and loaded semantic resources."""
     policy_version = str(getattr(service, "ITN_POLICY_VERSION", ""))
     if not policy_version:
-        raise VoiceFlypyXASRLoadError("x_asr_itn_policy_identity_missing")
+        raise VoiceFlyXASRLoadError("x_asr_itn_policy_identity_missing")
 
     active_sha256 = ""
     personal_function = getattr(service, "apply_personal_phonetic_corrections", None)
@@ -402,14 +402,14 @@ def _normalization_identity(service: Any) -> dict[str, Any]:
                     Path(personal_module_path)
                 )
         except BaseException as exc:
-            raise VoiceFlypyXASRLoadError(
+            raise VoiceFlyXASRLoadError(
                 "x_asr_personal_phonetics_identity_failed"
             ) from exc
     if active_sha256 and (
         len(active_sha256) != 64
         or any(character not in "0123456789abcdef" for character in active_sha256)
     ):
-        raise VoiceFlypyXASRLoadError("x_asr_personal_phonetics_identity_invalid")
+        raise VoiceFlyXASRLoadError("x_asr_personal_phonetics_identity_invalid")
 
     normalizer_module_sha256 = None
     service_path = getattr(service, "__file__", None)
@@ -428,7 +428,7 @@ def _normalization_identity(service: Any) -> dict[str, Any]:
         "",
     )
     if not voice_tool_module_name:
-        raise VoiceFlypyXASRLoadError("x_asr_voice_tool_identity_missing")
+        raise VoiceFlyXASRLoadError("x_asr_voice_tool_identity_missing")
     try:
         voice_tool_module = importlib.import_module(voice_tool_module_name)
         voice_tool_path = getattr(voice_tool_module, "__file__", None)
@@ -443,7 +443,7 @@ def _normalization_identity(service: Any) -> dict[str, Any]:
             or not callable(spoken_number_loader)
             or not callable(engineering_alias_loader)
         ):
-            raise VoiceFlypyXASRLoadError("x_asr_voice_tool_identity_missing")
+            raise VoiceFlyXASRLoadError("x_asr_voice_tool_identity_missing")
         voice_tool_module_sha256, _ = _sha256_file(Path(voice_tool_path))
         spoken_number_identity = _semantic_resource_identity(
             "spoken_number_exceptions",
@@ -455,10 +455,10 @@ def _normalization_identity(service: Any) -> dict[str, Any]:
             engineering_alias_loader(),
             row_width=3,
         )
-    except VoiceFlypyXASRLoadError:
+    except VoiceFlyXASRLoadError:
         raise
     except BaseException as exc:
-        raise VoiceFlypyXASRLoadError(
+        raise VoiceFlyXASRLoadError(
             "x_asr_voice_tool_identity_failed"
         ) from exc
     wetext_version = _distribution_version("WeTextProcessing")
@@ -480,8 +480,8 @@ def _normalization_identity(service: Any) -> dict[str, Any]:
     }
 
 
-class VoiceFlypyXASRProvider:
-    """Replay snapshots through the production VoiceFlypy X-ASR recognizer.
+class VoiceFlyXASRProvider:
+    """Replay snapshots through the production VoiceFly X-ASR recognizer.
 
     ``service_module``, ``recognizer_factory``, ``normalizer`` and
     ``environment`` are explicit test seams.  Without them, all native/service
@@ -552,7 +552,7 @@ class VoiceFlypyXASRProvider:
             "load_status": "failed",
             "error_code": code,
         }
-        error = VoiceFlypyXASRLoadError(code)
+        error = VoiceFlyXASRLoadError(code)
         if exc is None:
             raise error
         raise error from exc
@@ -561,7 +561,7 @@ class VoiceFlypyXASRProvider:
         if self._service_module is not None:
             return self._service_module
         try:
-            self._service_module = importlib.import_module("voice_flypy_service")
+            self._service_module = importlib.import_module("voice_fly_service")
         except BaseException as exc:
             self._fail_load("x_asr_service_import_failed", exc)
         return self._service_module
@@ -618,7 +618,7 @@ class VoiceFlypyXASRProvider:
                 model_sha256, model_files, model_state_before = self._model_identity(
                     model_dir
                 )
-            except VoiceFlypyXASRLoadError as exc:
+            except VoiceFlyXASRLoadError as exc:
                 self._fail_load(exc.code, exc)
             except BaseException as exc:
                 self._fail_load("x_asr_model_identity_failed", exc)
@@ -656,7 +656,7 @@ class VoiceFlypyXASRProvider:
                     requested_decoder,
                     bpe_fingerprint=requested_bpe_before,
                 )
-            except VoiceFlypyXASRLoadError as exc:
+            except VoiceFlyXASRLoadError as exc:
                 self._fail_load(exc.code, exc)
             except BaseException as exc:
                 self._fail_load("x_asr_readonly_decoder_resolution_failed", exc)
@@ -732,7 +732,7 @@ class VoiceFlypyXASRProvider:
                         effective_bpe,
                     )
                 ):
-                    raise VoiceFlypyXASRLoadError(
+                    raise VoiceFlyXASRLoadError(
                         "x_asr_effective_decoder_identity_mismatch"
                     )
                 effective_record = _safe_decoder_record(
@@ -744,7 +744,7 @@ class VoiceFlypyXASRProvider:
                     "hotwords_file",
                     missing_code="x_asr_decoder_hotwords_missing",
                 )
-            except VoiceFlypyXASRLoadError as exc:
+            except VoiceFlyXASRLoadError as exc:
                 self._fail_load(exc.code, exc)
             except BaseException as exc:
                 self._fail_load("x_asr_hotword_snapshot_load_failed", exc)
@@ -786,7 +786,7 @@ class VoiceFlypyXASRProvider:
             try:
                 normalization_identity = _normalization_identity(service)
                 sherpa_runtime_version = _distribution_version("sherpa-onnx")
-            except VoiceFlypyXASRLoadError as exc:
+            except VoiceFlyXASRLoadError as exc:
                 self._fail_load(exc.code, exc)
             except BaseException as exc:
                 self._fail_load("x_asr_normalization_identity_failed", exc)
@@ -839,11 +839,11 @@ class VoiceFlypyXASRProvider:
                             current_identity = _normalization_identity(service)
                             current_sha256 = _record_sha256(current_identity)
                         except BaseException as exc:
-                            raise VoiceFlypyXASRStreamError(
+                            raise VoiceFlyXASRStreamError(
                                 "x_asr_normalization_identity_changed"
                             ) from exc
                         if current_sha256 != expected_normalization_sha256:
-                            raise VoiceFlypyXASRStreamError(
+                            raise VoiceFlyXASRStreamError(
                                 "x_asr_normalization_identity_changed"
                             )
 
@@ -863,18 +863,18 @@ class VoiceFlypyXASRProvider:
                     except BaseException as exc:
                         try:
                             assert_normalization_identity()
-                        except VoiceFlypyXASRStreamError as identity_exc:
+                        except VoiceFlyXASRStreamError as identity_exc:
                             raise identity_exc from exc
-                        raise VoiceFlypyXASRStreamError(
+                        raise VoiceFlyXASRStreamError(
                             "x_asr_normalization_failed"
                         ) from exc
                     assert_normalization_identity()
                     if fallback_signaled:
-                        raise VoiceFlypyXASRStreamError(
+                        raise VoiceFlyXASRStreamError(
                             "x_asr_normalization_fallback"
                         )
                     if not isinstance(normalized, str):
-                        raise VoiceFlypyXASRStreamError(
+                        raise VoiceFlyXASRStreamError(
                             "x_asr_normalizer_result_invalid"
                         )
                     return normalized
@@ -966,11 +966,11 @@ class VoiceFlypyXASRProvider:
             return self._recognizer.create_stream(text) if use_inline else self._recognizer.create_stream()
         except BaseException as inline_exc:
             if not use_inline:
-                raise VoiceFlypyXASRStreamError("x_asr_stream_create_failed") from inline_exc
+                raise VoiceFlyXASRStreamError("x_asr_stream_create_failed") from inline_exc
             try:
                 stream = self._recognizer.create_stream()
             except BaseException as plain_exc:
-                raise VoiceFlypyXASRStreamError("x_asr_stream_create_failed") from plain_exc
+                raise VoiceFlyXASRStreamError("x_asr_stream_create_failed") from plain_exc
             self._stream_hotword_fallback = True
             return stream
 
@@ -988,7 +988,7 @@ class VoiceFlypyXASRProvider:
         if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be finite and positive")
         if not self._prepared.is_set():
-            raise VoiceFlypyXASRStreamError("x_asr_provider_not_prepared")
+            raise VoiceFlyXASRStreamError("x_asr_provider_not_prepared")
         with self._inference_lock:
             return self._transcribe_prepared(audio)
 
@@ -1032,19 +1032,19 @@ class VoiceFlypyXASRProvider:
                 committed_segments.append(final_segment)
             raw_text = self._join_segments(committed_segments)
             result = self._normalizer(raw_text)
-        except VoiceFlypyXASRError:
+        except VoiceFlyXASRError:
             raise
         except BaseException as exc:
-            raise VoiceFlypyXASRStreamError("x_asr_stream_inference_failed") from exc
+            raise VoiceFlyXASRStreamError("x_asr_stream_inference_failed") from exc
         if not isinstance(result, str):
-            raise VoiceFlypyXASRStreamError("x_asr_normalizer_result_invalid")
+            raise VoiceFlyXASRStreamError("x_asr_normalizer_result_invalid")
         return result
 
 
 __all__ = [
     "FAMILY",
-    "VoiceFlypyXASRError",
-    "VoiceFlypyXASRLoadError",
-    "VoiceFlypyXASRProvider",
-    "VoiceFlypyXASRStreamError",
+    "VoiceFlyXASRError",
+    "VoiceFlyXASRLoadError",
+    "VoiceFlyXASRProvider",
+    "VoiceFlyXASRStreamError",
 ]

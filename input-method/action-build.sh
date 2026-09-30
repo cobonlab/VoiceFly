@@ -4,7 +4,7 @@ set -e
 
 target="${1:-release}"
 
-# VoiceFlypy currently ships an arm64-only main executable. Keep the build
+# VoiceFly currently ships an arm64-only main executable. Keep the build
 # contract aligned with the installer declaration until universal output is
 # produced and verified end to end.
 export ARCHS='arm64'

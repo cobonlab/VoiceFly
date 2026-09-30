@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Exercise VoiceFlypy's X-ASR model with several decoding configurations.
+"""Exercise VoiceFly's X-ASR model with several decoding configurations.
 
-The script is intentionally independent of the installed/live VoiceFlypy
+The script is intentionally independent of the installed/live VoiceFly
 service.  Run one mode per process when comparing initialization time and RSS.
 """
 

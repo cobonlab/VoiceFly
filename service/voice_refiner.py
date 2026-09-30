@@ -1,4 +1,4 @@
-"""Bounded, fail-closed finalization for VoiceFlypy speech recognition.
+"""Bounded, fail-closed finalization for VoiceFly speech recognition.
 
 The streaming recognizer remains responsible for low-latency partial text.  At
 the end of a recording this module can give the same in-memory audio to a
@@ -335,7 +335,7 @@ def _encode_multipart(
     filename: str,
     file_bytes: bytes,
 ) -> tuple[bytes, str]:
-    boundary = f"----VoiceFlypy{uuid.uuid4().hex}"
+    boundary = f"----VoiceFly{uuid.uuid4().hex}"
     marker = boundary.encode("ascii")
     chunks: list[bytes] = []
     for name, value in fields.items():
@@ -424,7 +424,7 @@ class WhisperServerBackend:
             fields["prompt"] = self.prompt
         body, content_type = _encode_multipart(
             fields,
-            filename="voiceflypy-session.wav",
+            filename="voicefly-session.wav",
             file_bytes=_audio_as_wav(request.audio),
         )
         http_request = urllib.request.Request(
@@ -433,7 +433,7 @@ class WhisperServerBackend:
             headers={
                 "Content-Type": content_type,
                 "Content-Length": str(len(body)),
-                "User-Agent": "VoiceFlypy-Semantic-Shadow/1",
+                "User-Agent": "VoiceFly-Semantic-Shadow/1",
             },
             method="POST",
         )
@@ -652,7 +652,7 @@ class SherpaOfflineBackend:
                 "tokens": str(assets["tokens"]),
                 "feature_dim": 80,
                 "language": self.language,
-                # VoiceFlypy applies its established normalization exactly
+                # VoiceFly applies its established normalization exactly
                 # once after candidate generation.
                 "use_itn": False,
                 **common,
@@ -1394,14 +1394,14 @@ def build_refiner_from_environment(
     *,
     candidate_transform: Callable[[str], str] | None = None,
 ) -> FinalTextRefiner:
-    mode = os.environ.get("VOICEFLYPY_REFINER_MODE", "off").strip().casefold()
+    mode = os.environ.get("VOICEFLY_REFINER_MODE", "off").strip().casefold()
     timeout_default = 6.0 if mode == "shadow" else 1.5
     timeout_seconds = _environment_float(
-        "VOICEFLYPY_REFINER_TIMEOUT_SECONDS",
+        "VOICEFLY_REFINER_TIMEOUT_SECONDS",
         timeout_default,
     )
     max_audio_seconds = _environment_float(
-        "VOICEFLYPY_REFINER_MAX_AUDIO_SECONDS",
+        "VOICEFLY_REFINER_MAX_AUDIO_SECONDS",
         20.0,
     )
     validator = CandidateValidator(candidate_transform=candidate_transform)
@@ -1413,11 +1413,11 @@ def build_refiner_from_environment(
             max_audio_seconds=max_audio_seconds,
         )
     endpoint = os.environ.get(
-        "VOICEFLYPY_WHISPER_ENDPOINT",
+        "VOICEFLY_WHISPER_ENDPOINT",
         "http://127.0.0.1:18080/inference",
     ).strip()
-    language = os.environ.get("VOICEFLYPY_WHISPER_LANGUAGE", "auto").strip()
-    prompt = os.environ.get("VOICEFLYPY_WHISPER_PROMPT", "").strip()
+    language = os.environ.get("VOICEFLY_WHISPER_LANGUAGE", "auto").strip()
+    prompt = os.environ.get("VOICEFLY_WHISPER_PROMPT", "").strip()
     return FinalTextRefiner(
         mode=mode,
         backend=WhisperServerBackend(
