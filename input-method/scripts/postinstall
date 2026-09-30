@@ -1,0 +1,63 @@
+#!/bin/bash
+
+set -euo pipefail
+
+if [ -n "${DSTROOT:-}" ]; then
+    input_methods_root="${DSTROOT%/}"
+else
+    install_volume="${3:-/}"
+    input_methods_root="${install_volume%/}/Library/Input Methods"
+fi
+
+login_user="$(/usr/bin/stat -f%Su /dev/console)"
+has_login_user=1
+if [ -z "${login_user}" ] || [ "${login_user}" = root ] || [ "${login_user}" = loginwindow ]; then
+    has_login_user=0
+fi
+
+voiceflypy_app_root="${input_methods_root}/VoiceFlypy.app"
+voiceflypy_executable="${voiceflypy_app_root}/Contents/MacOS/Squirrel"
+if [ ! -x "${voiceflypy_executable}" ]; then
+    echo >&2 "ERROR: installed VoiceFlypy executable is missing: ${voiceflypy_executable}"
+    exit 1
+fi
+
+run_as_login_user() {
+    if [ "$(/usr/bin/id -un)" = "${login_user}" ]; then
+        "$@"
+    elif [ "$(/usr/bin/id -u)" = 0 ]; then
+        /usr/bin/sudo -u "${login_user}" "$@"
+    else
+        echo >&2 "ERROR: activation must run as ${login_user} or root."
+        return 1
+    fi
+}
+
+if [ "${has_login_user}" -eq 0 ]; then
+    echo 'VoiceFlypy files were installed, but TIS registration and activation require a GUI login.'
+    echo 'After login, run the following commands as that user:'
+    printf "  '%s' --register-input-source\n" "${voiceflypy_executable}"
+    printf "  '%s' --build\n" "${voiceflypy_executable}"
+    printf "  '%s' --enable-input-source\n" "${voiceflypy_executable}"
+    printf "  '%s' --select-input-source\n" "${voiceflypy_executable}"
+    exit 0
+fi
+
+run_as_login_user "${voiceflypy_executable}" --register-input-source
+
+if [ -z "${RIME_NO_PREBUILD:-}" ]; then
+    run_as_login_user "${voiceflypy_executable}" --build
+fi
+
+run_as_login_user "${voiceflypy_executable}" --enable-input-source
+
+# Replacing the input-method process can strand an in-flight recording if its
+# final distributed stop notification is lost during shutdown.  Start every
+# newly installed input method with a clean voice-service state.
+voice_service_label="com.simonli.voiceflypy.service"
+login_uid="$(/usr/bin/id -u "${login_user}")"
+if ! run_as_login_user /bin/launchctl kickstart -k "gui/${login_uid}/${voice_service_label}"; then
+    echo >&2 "WARNING: unable to restart VoiceFlypyService; voice input may need a manual service restart."
+fi
+
+run_as_login_user "${voiceflypy_executable}" --select-input-source

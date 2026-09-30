@@ -1,0 +1,134 @@
+#!/bin/bash
+# encoding: utf-8
+
+set -euo pipefail
+
+cd "$(dirname "$0")"
+source common.sh
+
+checksum="${checksum:-}"
+app_version="$(get_app_version)"
+source_pkg='VoiceFlypy.pkg'
+target_pkg="VoiceFlypy-${app_version}.pkg"
+
+verify_archive() {
+    if [ ! -f "${target_pkg}" ]; then
+        echo >&2 "ERROR: file does not exist: ${target_pkg}"
+        exit 1
+    fi
+    echo 'sha256 checksum:'
+    echo "${checksum}  ${target_pkg}"
+    /usr/bin/shasum -a 256 -c <<<"${checksum}  ${target_pkg}"
+}
+
+create_archive() {
+    if [ ! -f "${source_pkg}" ]; then
+        echo >&2 "ERROR: package does not exist: ${source_pkg}"
+        exit 1
+    fi
+    if [ -e "${target_pkg}" ]; then
+        echo >&2 "ERROR: target archive already exists: ${target_pkg}"
+        exit 1
+    fi
+    /bin/cp "${source_pkg}" "${target_pkg}"
+    echo 'sha256 checksum:'
+    /usr/bin/shasum -a 256 "${target_pkg}"
+}
+
+write_appcast() {
+    local appcast_file="$1"
+    local channel_title="$2"
+    local channel_link="$3"
+    local channel_description="$4"
+    local download_url="$5"
+    local release_notes_url="$6"
+    local minimum_system_version="$7"
+
+    cat > "${appcast_file}" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>${channel_title}</title>
+    <link>${channel_link}</link>
+    <description>${channel_description}</description>
+    <language>zh</language>
+    <item>
+      <title>VoiceFlypy ${app_version}</title>
+      <sparkle:releaseNotesLink>${release_notes_url}</sparkle:releaseNotesLink>
+      <sparkle:minimumSystemVersion>${minimum_system_version}</sparkle:minimumSystemVersion>
+      <pubDate>${pub_date}</pubDate>
+      <enclosure url="${download_url}"
+                 sparkle:version="${app_version}"
+                 sparkle:edSignature="${ed_signature}"
+                 length="${length}"
+                 type="application/octet-stream"/>
+    </item>
+  </channel>
+</rss>
+EOF
+    /usr/bin/xmllint --noout "${appcast_file}"
+    /bin/ls -l "${appcast_file}"
+}
+
+if [ -n "${checksum}" ]; then
+    verify_archive
+else
+    create_archive
+fi
+
+if signature="$(./sign_update "${target_pkg}")"; then
+    echo 'sign_update succeeded.'
+else
+    echo 'sign_update is unavailable; package archive created without appcast files.'
+    exit 0
+fi
+ed_signature="$(echo "${signature}" | /usr/bin/awk -F'"' '{print $2}')"
+length="$(echo "${signature}" | /usr/bin/awk -F'"' '{print $4}')"
+if [ -z "${ed_signature}" ] || [[ "${length}" == *[!0-9]* ]] || [ -z "${length}" ]; then
+    echo >&2 'ERROR: sign_update returned an invalid Sparkle signature or length.'
+    exit 1
+fi
+pub_date="$(/bin/date -R)"
+
+release_base_url="${VOICEFLYPY_RELEASE_BASE_URL:-}"
+if [ -n "${release_base_url}" ]; then
+    release_base_url="${release_base_url%/}"
+    release_site_url="${VOICEFLYPY_RELEASE_SITE_URL:-${release_base_url}}"
+    release_notes_url="${VOICEFLYPY_RELEASE_NOTES_URL:-${release_site_url}}"
+    write_appcast \
+        'appcast.xml' \
+        'VoiceFlypy 输入法更新频道' \
+        "${release_site_url}" \
+        'VoiceFlypy 稳定版更新频道' \
+        "${release_base_url}/${app_version}/${target_pkg}" \
+        "${release_notes_url}" \
+        '13.0.0'
+else
+    echo 'VOICEFLYPY_RELEASE_BASE_URL is unset; skipping public release appcast.'
+fi
+
+testing_base_url="${VOICEFLYPY_TESTING_RELEASE_BASE_URL:-}"
+if [ -n "${testing_base_url}" ]; then
+    testing_base_url="${testing_base_url%/}"
+    testing_site_url="${VOICEFLYPY_TESTING_SITE_URL:-${testing_base_url}}"
+    testing_notes_url="${VOICEFLYPY_TESTING_NOTES_URL:-${testing_site_url}}"
+    write_appcast \
+        'testing-appcast.xml' \
+        'VoiceFlypy 输入法测试频道' \
+        "${testing_site_url}" \
+        'VoiceFlypy 测试版更新频道' \
+        "${testing_base_url}/${app_version}/${target_pkg}" \
+        "${testing_notes_url}" \
+        '13.0.0'
+else
+    echo 'VOICEFLYPY_TESTING_RELEASE_BASE_URL is unset; skipping public testing appcast.'
+fi
+
+write_appcast \
+    'debug-appcast.xml' \
+    'VoiceFlypy 输入法本地测试' \
+    "file://${PROJECT_ROOT}/package/debug-appcast.xml" \
+    'VoiceFlypy 本地 Appcast 测试频道' \
+    "file://${PROJECT_ROOT}/package/${target_pkg}" \
+    "file://${PROJECT_ROOT}/package/" \
+    '13.0.0'

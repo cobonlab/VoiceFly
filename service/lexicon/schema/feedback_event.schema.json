@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voicefly.local/schema/feedback_event.schema.json",
+  "title": "Voice Fly span-only append-only feedback event",
+  "description": "Local review evidence. An event has no production effect until a separate human review updates the master lexicon and recompiles it.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "schema_version",
+    "occurred_at",
+    "channel",
+    "action",
+    "raw_span",
+    "canonical",
+    "domain",
+    "profile",
+    "release",
+    "undoes_event_id",
+    "privacy",
+    "production_effect"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^vff_[0-9a-f]{32}$"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "channel": {
+      "enum": ["keyboard", "speech"]
+    },
+    "action": {
+      "enum": ["accept", "reject", "undo"]
+    },
+    "raw_span": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[^\\r\\n\\u0000]+$"
+    },
+    "canonical": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[^\\r\\n\\u0000]+$"
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"
+    },
+    "profile": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "release": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "undoes_event_id": {
+      "type": ["string", "null"],
+      "pattern": "^vff_[0-9a-f]{32}$"
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["storage", "content", "whole_sentence_stored"],
+      "properties": {
+        "storage": {"const": "local_private"},
+        "content": {"const": "span_only"},
+        "whole_sentence_stored": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "production_effect": {
+      "const": "none_pending_review"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"action": {"const": "undo"}},
+        "required": ["action"]
+      },
+      "then": {
+        "properties": {"undoes_event_id": {"type": "string"}}
+      },
+      "else": {
+        "properties": {"undoes_event_id": {"type": "null"}}
+      }
+    }
+  ],
+  "additionalProperties": false
+}

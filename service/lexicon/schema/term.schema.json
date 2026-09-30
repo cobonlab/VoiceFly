@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voicefly.local/schema/term.schema.json",
+  "title": "Voice Fly unified lexicon term",
+  "type": "object",
+  "required": [
+    "id",
+    "canonical",
+    "preferred_forms",
+    "language",
+    "term_type",
+    "domains",
+    "layer",
+    "visibility",
+    "status",
+    "speech",
+    "casing",
+    "keyboard",
+    "hotword",
+    "governance"
+  ],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+    "canonical": {"type": "string", "minLength": 1},
+    "preferred_forms": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "language": {"enum": ["zh", "en", "mixed", "other"]},
+    "term_type": {"type": "string", "minLength": 1},
+    "domains": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"}
+    },
+    "layer": {"enum": ["core", "personal", "domain", "project", "probation", "quarantine"]},
+    "visibility": {"enum": ["public", "private", "client-secret"]},
+    "status": {"enum": ["draft", "probation", "active", "deprecated", "quarantined"]},
+    "description": {"type": "string"},
+    "speech": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/variant"}
+    },
+    "casing": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/variant"}
+    },
+    "keyboard": {
+      "type": "object",
+      "required": ["enabled", "pinyin", "flypy_codes", "weight", "custom_phrase_commits"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "pinyin": {"type": "array", "items": {"type": "string"}},
+        "flypy_codes": {"type": "array", "items": {"type": "string"}},
+        "weight": {"type": "integer", "minimum": 0},
+        "custom_phrase_commits": {
+          "description": "Rime stabledb commits for explicit custom_phrase rows; independent of dictionary weight.",
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "hotword": {
+      "type": "object",
+      "required": ["enabled", "forms", "boost", "form_scores", "model_scope"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "forms": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "boost": {"type": "number", "minimum": 0},
+        "form_scores": {
+          "description": "Optional per-form score overrides; keys must also occur in forms.",
+          "type": "object",
+          "additionalProperties": {"type": "number", "minimum": 0}
+        },
+        "model_scope": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "governance": {
+      "type": "object",
+      "required": ["source", "owner", "evidence_count", "confirmed_count", "rejected_count", "created_at", "updated_at"],
+      "properties": {
+        "source": {"type": "string"},
+        "owner": {"type": "string"},
+        "evidence_count": {"type": "integer", "minimum": 0},
+        "confirmed_count": {"type": "integer", "minimum": 0},
+        "rejected_count": {"type": "integer", "minimum": 0},
+        "created_at": {"type": "string"},
+        "updated_at": {"type": "string"},
+        "expires_at": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "variant": {
+      "type": "object",
+      "required": ["form", "kind", "match_mode", "risk", "priority", "model_scope", "positive_context", "negative_context", "sources"],
+      "properties": {
+        "form": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["asr_error", "spoken_alias", "canonical_case", "legacy_noop"]},
+        "match_mode": {"enum": ["token", "phrase", "substring", "context"]},
+        "risk": {"enum": ["low", "medium", "high", "blocked"]},
+        "priority": {"type": "integer"},
+        "model_scope": {"type": "array", "items": {"type": "string"}},
+        "positive_context": {"type": "array", "items": {"type": "string"}},
+        "negative_context": {"type": "array", "items": {"type": "string"}},
+        "sources": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

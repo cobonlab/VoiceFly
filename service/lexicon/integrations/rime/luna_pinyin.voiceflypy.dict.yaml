@@ -1,0 +1,15 @@
+# Rime dictionary
+# encoding: utf-8
+#
+# Composite dictionary: retain the complete official Luna Pinyin lexicon and
+# add the generated Voice Fly personal lexicon as a separate import.
+
+---
+name: luna_pinyin.voiceflypy
+version: "2026.08.16"
+sort: by_weight
+use_preset_vocabulary: true
+import_tables:
+  - luna_pinyin
+  - voiceflypy_personal
+...

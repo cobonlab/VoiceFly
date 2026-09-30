@@ -1,0 +1,87 @@
+#!/bin/bash
+
+set -euo pipefail
+
+if [ -n "${DSTROOT:-}" ]; then
+    input_methods_root="${DSTROOT%/}"
+else
+    install_volume="${3:-/}"
+    input_methods_root="${install_volume%/}/Library/Input Methods"
+fi
+
+voiceflypy_app="${input_methods_root}/VoiceFlypy.app"
+voiceflypy_executable="${voiceflypy_app}/Contents/MacOS/Squirrel"
+
+running_voiceflypy_pids() {
+    /bin/ps -axo pid=,command= | /usr/bin/awk -v executable="${voiceflypy_executable}" '
+        {
+            pid = $1
+            sub(/^[[:space:]]*[0-9]+[[:space:]]+/, "", $0)
+            if ($0 == executable || index($0, executable " ") == 1) {
+                print pid
+            }
+        }
+    '
+}
+
+remaining_pids="$(running_voiceflypy_pids)"
+if [ -L "${voiceflypy_app}" ]; then
+    echo >&2 "ERROR: refusing to replace a symlinked VoiceFlypy.app: ${voiceflypy_app}"
+    exit 1
+fi
+if [ ! -x "${voiceflypy_executable}" ]; then
+    if [ -n "${remaining_pids}" ]; then
+        echo >&2 "ERROR: VoiceFlypy is running but its bundle-scoped quit executable is unavailable: ${voiceflypy_executable}"
+        echo >&2 "Running PIDs: ${remaining_pids}"
+        exit 1
+    fi
+    if [ -e "${voiceflypy_app}" ]; then
+        echo >&2 "ERROR: refusing to replace an invalid VoiceFlypy.app: ${voiceflypy_app}"
+        exit 1
+    fi
+    exit 0
+fi
+
+installed_plist="${voiceflypy_app}/Contents/Info.plist"
+if ! installed_bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${installed_plist}" 2>/dev/null)"; then
+    echo >&2 "ERROR: refusing to replace an app with unreadable identity at ${voiceflypy_app}."
+    exit 1
+fi
+if [ "${installed_bundle_identifier}" != 'com.simonli.inputmethod.VoiceFlypy' ]; then
+    echo >&2 "ERROR: refusing to invoke --quit or replace unexpected bundle ${installed_bundle_identifier} at ${voiceflypy_app}."
+    exit 1
+fi
+
+login_user="$(/usr/bin/stat -f%Su /dev/console)"
+if [ -z "${login_user}" ] || [ "${login_user}" = root ] || [ "${login_user}" = loginwindow ]; then
+    if [ -z "${remaining_pids}" ]; then
+        exit 0
+    fi
+    echo >&2 "ERROR: cannot identify the logged-in user required to quit VoiceFlypy safely."
+    exit 1
+fi
+
+# Always send the bundle-scoped quit request when an installed app is present.
+# The process-list check below is a second, independent replacement gate.
+current_user="$(/usr/bin/id -un)"
+if [ "${current_user}" = "${login_user}" ]; then
+    "${voiceflypy_executable}" --quit
+elif [ "$(/usr/bin/id -u)" = 0 ]; then
+    /usr/bin/sudo -u "${login_user}" "${voiceflypy_executable}" --quit
+else
+    echo >&2 "ERROR: install must run as ${login_user} or root to quit VoiceFlypy safely."
+    exit 1
+fi
+
+for ((attempt = 0; attempt < 50; attempt += 1)); do
+    remaining_pids="$(running_voiceflypy_pids)"
+    if [ -z "${remaining_pids}" ]; then
+        echo "VoiceFlypy exited cleanly before replacement."
+        exit 0
+    fi
+    /bin/sleep 0.1
+done
+
+echo >&2 "ERROR: VoiceFlypy did not exit; refusing to replace the running bundle."
+echo >&2 "Running PIDs: ${remaining_pids}"
+exit 1

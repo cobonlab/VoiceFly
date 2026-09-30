@@ -1,0 +1,95 @@
+diff --git a/src/rime/gear/selector.cc b/src/rime/gear/selector.cc
+index 3c55e94f..02417718 100644
+--- a/src/rime/gear/selector.cc
++++ b/src/rime/gear/selector.cc
+@@ -19,6 +19,8 @@ namespace rime {
+ static Selector::ActionDef selector_actions[] = {
+     {"previous_candidate", &Selector::PreviousCandidate},
+     {"next_candidate", &Selector::NextCandidate},
++    {"previous_row", &Selector::PreviousRow},
++    {"next_row", &Selector::NextRow},
+     {"previous_page", &Selector::PreviousPage},
+     {"next_page", &Selector::NextPage},
+     {"home", &Selector::Home},
+@@ -99,6 +101,10 @@ Selector::Selector(const Ticket& ticket)
+   }
+ 
+   Config* config = engine_->schema()->config();
++  config->GetInt("selector/row_size", &row_size_);
++  if (row_size_ < 2 || row_size_ > engine_->schema()->page_size()) {
++    row_size_ = 0;
++  }
+   LoadConfig(config, "selector", Horizontal | Stacked);
+   LoadConfig(config, "selector/linear", Horizontal | Linear);
+   LoadConfig(config, "selector/vertical", Vertical | Stacked);
+@@ -149,6 +155,12 @@ ProcessResult Selector::ProcessKeyEvent(const KeyEvent& key_event) {
+   else if (ch >= XK_KP_0 && ch <= XK_KP_9)
+     index = ((ch - XK_KP_0) + 9) % 10;
+   if (index >= 0) {
++    // In row-selection mode, number keys address a column in the highlighted
++    // row rather than an absolute position in the whole candidate page.
++    if (row_size_ > 0) {
++      int selected_index = current_segment.selected_index;
++      index = (selected_index / row_size_) * row_size_ + index;
++    }
+     SelectCandidateAt(ctx, index);
+     return kAccepted;
+   }
+@@ -231,6 +243,35 @@ bool Selector::NextCandidate(Context* ctx) {
+   return true;
+ }
+ 
++bool Selector::PreviousRow(Context* ctx) {
++  if (row_size_ == 0)
++    return false;
++  Composition& comp = ctx->composition();
++  if (comp.empty())
++    return false;
++  int index = comp.back().selected_index;
++  if (index < row_size_)
++    return true;
++  ctx->Highlight(index - row_size_);
++  comp.back().tags.insert("paging");
++  return true;
++}
++
++bool Selector::NextRow(Context* ctx) {
++  if (row_size_ == 0)
++    return false;
++  Composition& comp = ctx->composition();
++  if (comp.empty() || !comp.back().menu)
++    return false;
++  int index = comp.back().selected_index + row_size_;
++  int candidate_count = comp.back().menu->Prepare(index + 1);
++  if (candidate_count <= index)
++    return true;
++  ctx->Highlight(index);
++  comp.back().tags.insert("paging");
++  return true;
++}
++
+ bool Selector::Home(Context* ctx) {
+   if (ctx->composition().empty())
+     return false;
+diff --git a/src/rime/gear/selector.h b/src/rime/gear/selector.h
+index 5e4bfce0..28fbc95f 100644
+--- a/src/rime/gear/selector.h
++++ b/src/rime/gear/selector.h
+@@ -31,12 +31,17 @@ class Selector : public Processor, public KeyBindingProcessor<Selector, 4> {
+ 
+   Handler PreviousCandidate;
+   Handler NextCandidate;
++  Handler PreviousRow;
++  Handler NextRow;
+   Handler PreviousPage;
+   Handler NextPage;
+   Handler Home;
+   Handler End;
+ 
+   bool SelectCandidateAt(Context* ctx, int index);
++
++ private:
++  int row_size_ = 0;
+ };
+ 
+ }  // namespace rime

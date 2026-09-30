@@ -1,0 +1,124 @@
+#!/bin/bash
+
+set -euo pipefail
+
+DERIVED_DATA_PATH_ARGUMENT="${1-}"
+PACKAGE_IDENTIFIER='com.simonli.inputmethod.VoiceFlypy.pkg'
+APP_BUNDLE_IDENTIFIER='com.simonli.inputmethod.VoiceFlypy'
+SUPPORTED_ARCHITECTURE='arm64'
+INSTALL_LOCATION='/Library/Input Methods'
+
+cd "$(dirname "$0")"
+source common.sh
+
+app_version="$(get_app_version)"
+derived_data_root="$(resolve_derived_data_path "${DERIVED_DATA_PATH_ARGUMENT}")"
+products_root="${derived_data_root}/Build/Products/Release"
+voiceflypy_app="${products_root}/VoiceFlypy.app"
+legacy_squirrel_app="${products_root}/Squirrel.app"
+final_package="${PROJECT_ROOT}/package/VoiceFlypy.pkg"
+
+if [ ! -d "${voiceflypy_app}" ]; then
+    echo >&2 "ERROR: missing release app: ${voiceflypy_app}"
+    exit 1
+fi
+if [ -e "${legacy_squirrel_app}" ]; then
+    echo >&2 "ERROR: stale Squirrel.app found in Release; clean the build before packaging: ${legacy_squirrel_app}"
+    exit 1
+fi
+if [ ! -x "${voiceflypy_app}/Contents/MacOS/Squirrel" ]; then
+    echo >&2 "ERROR: VoiceFlypy.app is missing its internal Squirrel executable."
+    exit 1
+fi
+
+actual_architectures="$(/usr/bin/lipo -archs "${voiceflypy_app}/Contents/MacOS/Squirrel")"
+if [ "${actual_architectures}" != "${SUPPORTED_ARCHITECTURE}" ]; then
+    echo >&2 "ERROR: VoiceFlypy executable architecture ${actual_architectures} does not match declared installer architecture ${SUPPORTED_ARCHITECTURE}."
+    exit 1
+fi
+
+info_plist="${voiceflypy_app}/Contents/Info.plist"
+actual_bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${info_plist}")"
+actual_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "${info_plist}")"
+if [ "${actual_bundle_identifier}" != "${APP_BUNDLE_IDENTIFIER}" ]; then
+    echo >&2 "ERROR: unexpected app bundle identifier: ${actual_bundle_identifier}"
+    exit 1
+fi
+if [ "${actual_executable}" != 'Squirrel' ]; then
+    echo >&2 "ERROR: unexpected internal executable: ${actual_executable}"
+    exit 1
+fi
+
+work_dir="$(/usr/bin/mktemp -d "${TMPDIR:-/tmp}/voiceflypy-package.XXXXXX")"
+cleanup() {
+    /bin/rm -rf "${work_dir}"
+}
+trap cleanup EXIT
+
+payload_root="${work_dir}/payload"
+resources_dir="${work_dir}/resources"
+component_package="${work_dir}/VoiceFlypy-component.pkg"
+distribution_xml="${work_dir}/Distribution.xml"
+unsigned_package="${work_dir}/VoiceFlypy.pkg"
+/bin/mkdir -p "${payload_root}" "${resources_dir}"
+/usr/bin/ditto "${voiceflypy_app}" "${payload_root}/VoiceFlypy.app"
+/bin/cp "${PROJECT_ROOT}/package/conclusion.html" "${resources_dir}/conclusion.html"
+
+legacy_payload="$(/usr/bin/find "${payload_root}" -name Squirrel.app -print -quit)"
+if [ -n "${legacy_payload}" ]; then
+    echo >&2 "ERROR: package payload contains forbidden Squirrel.app: ${legacy_payload}"
+    exit 1
+fi
+if [ ! -d "${payload_root}/VoiceFlypy.app" ]; then
+    echo >&2 'ERROR: package payload does not contain VoiceFlypy.app.'
+    exit 1
+fi
+
+/usr/bin/pkgbuild \
+    --root "${payload_root}" \
+    --component-plist "${PROJECT_ROOT}/package/VoiceFlypy-component.plist" \
+    --identifier "${PACKAGE_IDENTIFIER}" \
+    --version "${app_version}" \
+    --install-location "${INSTALL_LOCATION}" \
+    --scripts "${PROJECT_ROOT}/scripts" \
+    "${component_package}"
+
+payload_listing="${work_dir}/payload-files.txt"
+/usr/sbin/pkgutil --payload-files "${component_package}" > "${payload_listing}"
+if /usr/bin/grep -Eq '(^|/)Squirrel\.app(/|$)' "${payload_listing}"; then
+    echo >&2 'ERROR: built component package contains forbidden Squirrel.app.'
+    exit 1
+fi
+unexpected_payload_root="$(/usr/bin/awk '
+    {
+        path = $0
+        sub(/^\.\//, "", path)
+        if (path == "" || path == ".") {
+            next
+        }
+        split(path, parts, "/")
+        if (parts[1] != "VoiceFlypy.app") {
+            print path
+            exit
+        }
+    }
+' "${payload_listing}")"
+if [ -n "${unexpected_payload_root}" ]; then
+    echo >&2 "ERROR: built component package has an unexpected payload root: ${unexpected_payload_root}"
+    exit 1
+fi
+if ! /usr/bin/grep -Eq '^(\./)?VoiceFlypy\.app(/|$)' "${payload_listing}"; then
+    echo >&2 'ERROR: built component package does not contain VoiceFlypy.app.'
+    exit 1
+fi
+
+/usr/bin/sed "s/@VERSION@/${app_version}/" "${PROJECT_ROOT}/package/Distribution" > "${distribution_xml}"
+
+/usr/bin/productbuild \
+    --distribution "${distribution_xml}" \
+    --package-path "${work_dir}" \
+    --resources "${resources_dir}" \
+    "${unsigned_package}"
+
+/bin/mv -f "${unsigned_package}" "${final_package}"
+echo "Created ${final_package} with VoiceFlypy.app as its only application payload."

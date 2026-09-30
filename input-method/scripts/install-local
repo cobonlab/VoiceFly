@@ -1,0 +1,109 @@
+#!/bin/bash
+
+set -euo pipefail
+
+if [ "$#" -ne 1 ]; then
+    echo >&2 'usage: install-local /path/to/VoiceFlypy.app'
+    exit 64
+fi
+
+script_dir="$(cd "$(dirname "$0")" && pwd -P)"
+project_root="$(cd "${script_dir}/.." && pwd -P)"
+candidate="$1"
+if [ ! -d "${candidate}" ]; then
+    echo >&2 "ERROR: install candidate does not exist: ${candidate}"
+    exit 1
+fi
+candidate_parent="$(cd "$(dirname "${candidate}")" && pwd -P)"
+candidate="${candidate_parent}/$(basename "${candidate}")"
+
+if [ "$(basename "${candidate}")" != 'VoiceFlypy.app' ]; then
+    echo >&2 "ERROR: install candidate must be named VoiceFlypy.app: ${candidate}"
+    exit 1
+fi
+if [ -e "${candidate_parent}/Squirrel.app" ]; then
+    echo >&2 "ERROR: stale Squirrel.app found beside the install candidate; clean the build first."
+    exit 1
+fi
+
+candidate_plist="${candidate}/Contents/Info.plist"
+candidate_executable="${candidate}/Contents/MacOS/Squirrel"
+if [ ! -x "${candidate_executable}" ]; then
+    echo >&2 'ERROR: VoiceFlypy.app is missing its internal Squirrel executable.'
+    exit 1
+fi
+bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${candidate_plist}")"
+bundle_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "${candidate_plist}")"
+if [ "${bundle_identifier}" != 'com.simonli.inputmethod.VoiceFlypy' ] || [ "${bundle_executable}" != 'Squirrel' ]; then
+    echo >&2 "ERROR: refusing candidate with identity ${bundle_identifier}/${bundle_executable}."
+    exit 1
+fi
+/usr/bin/codesign --verify --deep --strict "${candidate}"
+
+dstroot="${DSTROOT:-/Library/Input Methods}"
+dstroot="${dstroot%/}"
+target="${dstroot}/VoiceFlypy.app"
+backup_root="${VOICEFLYPY_BACKUP_ROOT:-/Library/Application Support/VoiceFlypy/InstallerBackups}"
+if [ -z "${dstroot}" ] || [ "${dstroot}" = / ] || [ -z "${backup_root}" ] || [ "${backup_root}" = / ]; then
+    echo >&2 'ERROR: refusing an unsafe install or backup root.'
+    exit 1
+fi
+
+# Quit and verify the exact installed VoiceFlypy executable before moving any bytes.
+DSTROOT="${dstroot}" /bin/bash "${script_dir}/preinstall"
+
+backup_dir="${backup_root}/$(/bin/date +%Y%m%d-%H%M%S)-voiceflypy-install-$$"
+/bin/mkdir -p "${backup_dir}"
+old_backup="${backup_dir}/VoiceFlypy.app"
+failed_install="${backup_dir}/VoiceFlypy.failed.app"
+had_old=0
+activation_started=0
+rollback_pending=1
+
+rollback() {
+    original_status=$?
+    set +e
+    if [ "${rollback_pending}" -eq 1 ]; then
+        echo >&2 "ERROR: VoiceFlypy installation failed; attempting rollback from ${backup_dir}."
+        safe_to_restore=1
+        if [ "${activation_started}" -eq 1 ] && ! DSTROOT="${dstroot}" /bin/bash "${script_dir}/preinstall"; then
+            safe_to_restore=0
+        fi
+        if [ "${safe_to_restore}" -eq 1 ]; then
+            if [ -e "${target}" ] || [ -L "${target}" ]; then
+                /bin/mv "${target}" "${failed_install}"
+            fi
+            if [ "${had_old}" -eq 1 ] && [ -e "${old_backup}" ]; then
+                /bin/mv "${old_backup}" "${target}"
+                echo >&2 "Restored the previous VoiceFlypy.app. Failed candidate retained at ${failed_install}."
+            fi
+        else
+            echo >&2 "ERROR: rollback could not safely quit the replacement; previous app remains at ${old_backup}."
+        fi
+    fi
+    exit "${original_status}"
+}
+trap rollback EXIT
+
+if [ -e "${target}" ] || [ -L "${target}" ]; then
+    /bin/mv "${target}" "${old_backup}"
+    had_old=1
+fi
+
+/usr/bin/ditto "${candidate}" "${target}"
+/usr/bin/codesign --verify --deep --strict "${target}"
+
+activation_started=1
+if [ -n "${RIME_NO_PREBUILD:-}" ]; then
+    DSTROOT="${dstroot}" RIME_NO_PREBUILD="${RIME_NO_PREBUILD}" /bin/bash "${script_dir}/postinstall"
+else
+    DSTROOT="${dstroot}" /bin/bash "${script_dir}/postinstall"
+fi
+
+rollback_pending=0
+trap - EXIT
+if [ "${had_old}" -eq 1 ]; then
+    echo "Installed VoiceFlypy.app; recoverable previous version: ${old_backup}"
+else
+    echo "Installed VoiceFlypy.app; no previous installation required backup."
+fi

@@ -1,0 +1,10 @@
+# Versions observed in the existing macOS Python 3.13 development environment.
+# This is NOT a clean-install lock; see docs/BUILD.md before using it.
+numpy==2.5.2
+sounddevice==0.5.5
+sherpa-onnx==1.13.5
+pyobjc-core==12.2.2; sys_platform == "darwin"
+pyobjc-framework-Cocoa==12.2.2; sys_platform == "darwin"
+wetextprocessing==1.1.1.dev1
+pynini==2.1.7
+pyinstaller==6.22.0
