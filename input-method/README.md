@@ -1,5 +1,5 @@
-> This folder is the Squirrel-derived frontend of [VoiceFlypy](../README.md).
-> The upstream text and download links below describe Squirrel, not a VoiceFlypy installation package.
+> This folder is the Squirrel-derived frontend of [Voice Fly](../README.md).
+> The upstream text and download links below describe Squirrel, not a Voice Fly installation package.
 
     鼠鬚管
     爲物雖微情不淺

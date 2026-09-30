@@ -568,7 +568,7 @@
   "public_modifications": [
     {
       "path": "input-method/README.md",
-      "sha256": "5fd0c7c9d419372e5079a2dde62350dfaa71d1d582f4999ea62e7c855628a0d1",
+      "sha256": "c01cdc1c2a600f4379c188ebf9f3e9cb28aece7ecde4a55211098bcd84df4067",
       "reason": "Identify VoiceFlypy fork and separate upstream installation links"
     },
     {
@@ -576,5 +576,7 @@
       "sha256": "254fa72eec09e05b68db3d882c0c40c428a722d9f6376ce1196f74eeba4d07dc",
       "reason": "Use explicit pinned dependency preparation in standalone export"
     }
-  ]
+  ],
+  "public_project_name": "Voice Fly",
+  "public_repository": "https://github.com/cobonlab/VoiceFly"
 }

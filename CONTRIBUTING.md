@@ -1,4 +1,4 @@
-# Contributing to VoiceFlypy
+# Contributing to Voice Fly
 
 This is an early public source release. Useful contributions include reproducing input/audio problems, making standalone tests independent of local configuration, improving developer setup, implementing visual settings, adding typing schemes with correct learning, and preparing installation/recovery workflows.
 

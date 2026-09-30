@@ -1,4 +1,4 @@
-# VoiceFlypy development roadmap
+# Voice Fly development roadmap
 
 This is the plan for moving the existing local integration toward independent use by new users. Items below are planned work, not completed functionality. Review progress twice weekly; publish a verified update weekly when feasible. Each milestone can take more than one week.
 

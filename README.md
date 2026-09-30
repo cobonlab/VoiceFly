@@ -1,16 +1,16 @@
-# VoiceFlypy
+# Voice Fly
 
 **Local Chinese-English dictation and Rime keyboard input in a native macOS input method.**
 
 [中文说明](docs/README.zh-CN.md) · [Development and testing](docs/BUILD.md) · [Roadmap](ROADMAP.md) · [Maintenance history](docs/MAINTENANCE.md)
 
-VoiceFlypy grew from daily use and sustained development with Codex. It combines Squirrel/Rime typing with local streaming speech recognition, so a user can type, hold Control to dictate, see text while speaking, and release to commit. Explicitly saved personal terms can inform both typing and speech.
+Voice Fly grew from daily use and sustained development with Codex. It combines Squirrel/Rime typing with local streaming speech recognition, so a user can type, hold Control to dictate, see text while speaking, and release to commit. Explicitly saved personal terms can inform both typing and speech.
 
 **Status: early development source release.** The integrated system runs on the maintainer's Apple Silicon Mac. This repository makes the integration and regression tests available for review and contribution. A complete installer for new users, a visual settings window, and integrated support for additional typing schemes are still being developed. There is no consumer installation package in this release.
 
 ## Why this project exists
 
-Working with AI involves explaining ideas, requirements, corrections, and context in large amounts of text. For the maintainer, keyboard entry repeatedly interrupted that flow of thought and slowed project work. VoiceFlypy grew from this daily need: make it easier to express an idea to an AI assistant on a Mac while the idea is still clear.
+Working with AI involves explaining ideas, requirements, corrections, and context in large amounts of text. For the maintainer, keyboard entry repeatedly interrupted that flow of thought and slowed project work. Voice Fly grew from this daily need: make it easier to express an idea to an AI assistant on a Mac while the idea is still clear.
 
 Three interaction choices shape that goal:
 
@@ -34,6 +34,8 @@ The speech model runs locally. The baseline recognizer does not require an OpenA
 - Swift and Python regression tests for learning, input rules, streaming revisions, audio handling, and service state.
 
 These describe the maintainer's integrated local system. The source release excludes private vocabulary and external models; it is not a claim that a new user can install the complete system with one click today.
+
+The project is published as **Voice Fly**. Some source filenames, Swift symbols, and local component identifiers retain the earlier `VoiceFlypy` name for compatibility with the existing development system.
 
 ## Repository layout
 
@@ -73,12 +75,12 @@ The next milestones are public defaults and scheme-independent learning, visual 
 
 ## Contributing and reporting problems
 
-Use [Issues](https://github.com/cobonlab/VoiceFlypy/issues) for reproducible bugs and proposals, and read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes. Please use synthetic examples and omit private dictionaries, audio, transcripts, credentials, and identifying logs.
+Use [Issues](https://github.com/cobonlab/VoiceFly/issues) for reproducible bugs and proposals, and read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes. Please use synthetic examples and omit private dictionaries, audio, transcripts, credentials, and identifying logs.
 
 Primary maintainer: Simon Li ([@cobonlab](https://github.com/cobonlab)). The project has been developed with Codex assistance; changes and upstream dependencies remain the maintainer's responsibility. This project is not affiliated with or endorsed by OpenAI.
 
 ## License and credits
 
-The Squirrel-derived frontend retains GPLv3. VoiceFlypy's original code and documentation are offered under GPL-3.0-only; upstream notices and licenses remain intact. External dependencies, models, dictionaries, and artwork retain their own terms. This source release includes no model weights or private dictionary packs. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The Squirrel-derived frontend retains GPLv3. Voice Fly's original code and documentation are offered under GPL-3.0-only; upstream notices and licenses remain intact. External dependencies, models, dictionaries, and artwork retain their own terms. This source release includes no model weights or private dictionary packs. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Thanks to [Squirrel](https://github.com/rime/squirrel), [librime](https://github.com/rime/librime), [plum](https://github.com/rime/plum), [Sparkle](https://github.com/sparkle-project/Sparkle), [X-ASR](https://github.com/Gilgamesh-J/X-ASR), and [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx). VoiceFlypy contributes their integration and input workflow; it does not claim to have created a new speech recognition model.
+Thanks to [Squirrel](https://github.com/rime/squirrel), [librime](https://github.com/rime/librime), [plum](https://github.com/rime/plum), [Sparkle](https://github.com/sparkle-project/Sparkle), [X-ASR](https://github.com/Gilgamesh-J/X-ASR), and [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx). Voice Fly contributes their integration and input workflow; it does not claim to have created a new speech recognition model.

@@ -1,6 +1,6 @@
 # Third-party notices and source provenance
 
-VoiceFlypy's original code and documentation in this repository are released under GPL-3.0-only. The Squirrel-derived frontend retains its existing GPLv3 license and attribution. This declaration does not replace a third party's copyright or license, and does not cover external model weights, vocabulary packs, or separately licensed artwork.
+Voice Fly's original code and documentation in this repository are released under GPL-3.0-only. The Squirrel-derived frontend retains its existing GPLv3 license and attribution. This declaration does not replace a third party's copyright or license, and does not cover external model weights, vocabulary packs, or separately licensed artwork.
 
 | Component | Source and use | License treatment |
 | --- | --- | --- |

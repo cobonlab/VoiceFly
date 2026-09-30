@@ -1,4 +1,4 @@
-# VoiceFlypy 本地语音与文字输入法
+# Voice Fly 本地语音与文字输入法
 
 ## 为什么做这个输入法
 
@@ -14,7 +14,7 @@
 
 ## 当前版本
 
-VoiceFlypy 把 Rime 文字输入和本地中英文语音识别接到 macOS 原生输入法里。可以打字，也可以按住 Control 说话，边说边显示，松键后提交；明确保存的个人词可以用于文字和语音。
+Voice Fly 把 Rime 文字输入和本地中英文语音识别接到 macOS 原生输入法里。可以打字，也可以按住 Control 说话，边说边显示，松键后提交；明确保存的个人词可以用于文字和语音。
 
 目前公开的是开发中的源码。整套系统已经在维护者的 Apple Silicon Mac 上日常使用，但新用户的一体安装包、真正的设置窗口、全拼五笔等方案仍在开发。这一版提供程序和测试，方便审查与参与开发，没有提供普通用户下载即用的安装包。
 
@@ -35,6 +35,6 @@ VoiceFlypy 把 Rime 文字输入和本地中英文语音识别接到 macOS 原�
 
 完整计划见[路线图](../ROADMAP.md)，现有成果和验证范围见[维护记录](MAINTENANCE.md)。开发者运行测试的方法见[构建与测试](BUILD.md)。
 
-可以在[问题反馈](https://github.com/cobonlab/VoiceFlypy/issues)中提供复现步骤。请用虚构的示例文字，避免上传个人词库、录音、私人正文和账号信息。
+可以在[问题反馈](https://github.com/cobonlab/VoiceFly/issues)中提供复现步骤。请用虚构的示例文字，避免上传个人词库、录音、私人正文和账号信息。
 
 维护者：Simon Li，GitHub 账号 [cobonlab](https://github.com/cobonlab)。感谢 Squirrel/Rime、X-ASR 和其他上游项目；我们的工作主要是整合、输入体验、个人学习和长期维护。

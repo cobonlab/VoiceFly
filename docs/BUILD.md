@@ -1,6 +1,6 @@
 # Development and testing
 
-This repository is an early source release. Standalone tests are the most direct reproducible entry point. The full input-method/service installer is not ready for independent installation; avoid treating an upstream Squirrel build guide as a complete VoiceFlypy installation guide.
+This repository is an early source release. Standalone tests are the most direct reproducible entry point. The full input-method/service installer is not ready for independent installation; avoid treating an upstream Squirrel build guide as a complete Voice Fly installation guide.
 
 ## Swift core
 

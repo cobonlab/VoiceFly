@@ -1,4 +1,4 @@
-# VoiceFlypy maintenance evidence
+# Voice Fly maintenance evidence
 
 This summary reconstructs local development before the first public source release. These dates are not public release dates, and the repository does not manufacture or backdate commits. Public maintenance begins with the actual initial source commit.
 
