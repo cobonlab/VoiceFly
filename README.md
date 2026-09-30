@@ -10,7 +10,15 @@ VoiceFlypy grew from daily use and sustained development with Codex. It combines
 
 ## Why this project exists
 
-Chinese input often involves switching between keyboard input and dictation, preserving specialist vocabulary, and fixing recognition errors. VoiceFlypy explores a local workflow that joins these tasks through macOS's native input-method composition. Its intended value to the open-source ecosystem is a reusable integration of existing Rime and ASR components, with explicit personal learning and regression coverage for difficult input and audio lifecycle cases.
+Working with AI involves explaining ideas, requirements, corrections, and context in large amounts of text. For the maintainer, keyboard entry repeatedly interrupted that flow of thought and slowed project work. VoiceFlypy grew from this daily need: make it easier to express an idea to an AI assistant on a Mac while the idea is still clear.
+
+Three interaction choices shape that goal:
+
+1. **A physical key to speak.** Hold Control to dictate and release to finalize, without repeatedly finding a microphone button.
+2. **A short action to save a term.** Double-tap Space, then choose a phrase length with a number key to explicitly save a term. This supports specialist vocabulary and recurring names used in AI conversations.
+3. **A shared vocabulary for typing and speech.** Explicitly saved personal terms connect Rime keyboard input and speech hotwords, so a useful term can serve both ways of expressing an idea. Ordinary typing frequency is not automatically treated as permission to change speech recognition.
+
+These are design goals grounded in the maintainer's use, not a measured productivity improvement or a claim that no other input tool offers similar features. The intended ecosystem contribution is a reusable, local integration of Rime and streaming ASR for AI conversations, with shared personal learning and regression coverage for difficult input and audio lifecycle cases.
 
 The speech model runs locally. The baseline recognizer does not require an OpenAI API key. Optional experimental refinement code is present but disabled by default; see [privacy and limitations](docs/PRIVACY.md). Public adoption has not yet been established.
 
