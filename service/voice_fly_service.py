@@ -1489,6 +1489,36 @@ class VoiceService(Foundation.NSObject):
 SERVICE = None
 
 
+def run_bundle_self_test():
+    """Check the shipped model/runtime without recording or starting a service."""
+    import json
+    import numpy as np
+
+    manifest = json.loads((RESOURCE_ROOT / "MODEL_MANIFEST.json").read_text())
+    for name in ("tokens.txt", "encoder.int8.onnx", "decoder.onnx", "joiner.int8.onnx", "bpe.vocab"):
+        if hashlib.sha256((MODEL_DIR / name).read_bytes()).hexdigest() != manifest["files"][name]:
+            raise ValueError("Packaged model checksum mismatch: " + name)
+    recognizer = sherpa_onnx.OnlineRecognizer.from_transducer(
+        tokens=str(MODEL_DIR / "tokens.txt"), encoder=str(MODEL_DIR / "encoder.int8.onnx"),
+        decoder=str(MODEL_DIR / "decoder.onnx"), joiner=str(MODEL_DIR / "joiner.int8.onnx"),
+        num_threads=2, sample_rate=SAMPLE_RATE, feature_dim=80,
+        decoding_method="greedy_search", enable_endpoint_detection=False,
+    )
+    stream = recognizer.create_stream()
+    stream.accept_waveform(SAMPLE_RATE, np.zeros(SAMPLE_RATE, dtype=np.float32))
+    stream.input_finished()
+    while recognizer.is_ready(stream):
+        recognizer.decode_stream(stream)
+    # This proves inference can run; silence is not a recognition accuracy test.
+    recognizer.get_result(stream)
+    if run_itn_self_test() or run_personal_phonetic_self_test():
+        return 1
+    print(json.dumps({"bundle": "passed", "model_hashes": 5,
+                      "inference": "silence", "microphone_opened": False,
+                      "service_started": False}, sort_keys=True), flush=True)
+    return 0
+
+
 def main():
     global SERVICE
     app = AppKit.NSApplication.sharedApplication()
@@ -1506,6 +1536,8 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--self-test-bundle" in sys.argv[1:]:
+        raise SystemExit(run_bundle_self_test())
     if "--self-test-itn" in sys.argv[1:]:
         raise SystemExit(run_itn_self_test())
     if "--self-test-personal-phonetics" in sys.argv[1:]:

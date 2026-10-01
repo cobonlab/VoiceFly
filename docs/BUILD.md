@@ -1,6 +1,6 @@
 # Development and testing
 
-Standalone tests are the most direct reproducible entry point. The 0.2.0 preview includes native settings and combined packaging. The current speech bundle requires Apple Silicon/macOS 26.4+; a complete build from a fresh development machine remains unverified.
+Standalone tests are the most direct reproducible entry point. The 0.2.0-preview.3 release includes native settings, combined packaging and a complete downloadable installer. The current speech bundle requires Apple Silicon/macOS 26.4+; a complete build from a fresh development machine remains unverified.
 
 ## Swift core
 
@@ -77,3 +77,13 @@ python3 scripts/build_installer.py
 ```
 
 These steps require the already prepared frontend and the runtime dependencies. They do not install the applications. The service specification bundles only named public model and starter files; personal words are migrated on the user's computer after installation. Preserve application symlinks and signing metadata when copying bundles (`ditto --rsrc --extattr` on macOS). Do not insert a maintainer's installed service into a release payload.
+
+## Installer portability and diagnostics
+
+The combined packager stages the reviewed public schemes and common resources, embeds glog/gflags and rewrites their loader links in the staged frontend. Optional plugin binaries from an older development checkout are omitted. The source application's existing signature is checked before staging; changed binaries and the staged application are ad-hoc signed again. This is local integrity signing, not Apple Developer ID or notarization.
+
+After building, extract the package with `pkgutil --expand-full`, verify each top-level application with `codesign --verify --deep --strict`, and scan native load links for non-system absolute dependencies. `scripts/verify_rime.c` checks real candidates in the six bundled schemes using a disposable profile and the package's actual library. It does not register or switch an input source. The settings application can initialize a disposable profile with `--prepare-test-user /absolute/path/to/temporary-home`; this diagnostic adds the synthetic term 人工智能.
+
+The bundled service's `--self-test-bundle` verifies the five shipped model hashes, executes inference on generated silence, and runs 24 normalization plus seven synthetic phonetic cases. Run it with a fresh temporary HOME/cache; do not start the live service or recording during artifact checks. For this preview, restricted test processes successfully denied network access, Homebrew, the old development directory and system Python. Those diagnostics do not prove microphone permission, acoustic recognition quality or first-install behavior on another Mac.
+
+Public common Rime resources are pinned in `third-party/rime-common/SOURCES.json`; binary dependency notices are under `third-party/binary-notices/`. Model artifacts remain excluded from the source archive and are included only in the separately attached installer.

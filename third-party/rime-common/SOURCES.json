@@ -1,0 +1,36 @@
+[
+  {
+    "name": "prelude",
+    "repository": "https://github.com/rime/rime-prelude.git",
+    "commit": "082425ea0684bca36474415d4a0e8db9b016487e",
+    "files": {
+      "default.yaml": "0628ada16651d56c4cdfcb8e45ddba23d4d585cc8be0580a62c4e077c0bcc141",
+      "symbols.yaml": "6d08969525bd66c67abf1791c99928079356bd0e673386c49c1959d2a52fdbba",
+      "key_bindings.yaml": "ee2476598b4cae89068b823868196eb07b5f72007a600814fe5804b39008b3ed",
+      "punctuation.yaml": "d6f89592149098f0a2d0ed3e5c83f49adb6226cdf1d967b0bc0d293f4e5c496a",
+      "LICENSE": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "README.md": "73d24d71706e1a433280df4fd903c384ffcacf5a66b2d1fb2e749ed85085bf94"
+    }
+  },
+  {
+    "name": "essay",
+    "repository": "https://github.com/rime/rime-essay.git",
+    "commit": "e9b1a374a6ea015fca5bdd04318924b4483ac35a",
+    "files": {
+      "essay.txt": "a6f8409c261e5d21bd78e6cbcde8f8e1ef7f68c07ff1c2692c07dd4ff4151cea",
+      "LICENSE": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "README.md": "e34e69e56829dc3eb9236bd750e982bb0849be635756e26cde196c62b9409342"
+    }
+  },
+  {
+    "name": "stroke",
+    "repository": "https://github.com/rime/rime-stroke.git",
+    "commit": "3a4b0f4013e2b4c14b1e80c92b1d4723eb65f39c",
+    "files": {
+      "stroke.schema.yaml": "06f680cf7c9d9a69948681ee25e9f6aeccfde4d8d590f93e179d4c4b3caee879",
+      "stroke.dict.yaml": "e897ed2e3d1da8d6e6a347310165374bebf36b9710afd789f5e31abb4da0fe76",
+      "LICENSE": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "README.md": "024c5ff587a9d3340d1239946f02141ca98489a125d51b9aa5fe4620c0377545"
+    }
+  }
+]

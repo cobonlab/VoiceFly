@@ -1,0 +1,69 @@
+{
+  "version": "0.2.0-preview.3",
+  "date": "2026-10-01",
+  "package": "VoiceFly-0.2.0-preview.3-arm64.pkg",
+  "bytes": 177848776,
+  "sha256": "a6040a5ef8282d13b6dc8fbc25a29d764830ee986ec90b2bb52a3a8ef9104067",
+  "apps": [
+    {
+      "app": "VoiceFly.app",
+      "identifier": "com.simonli.inputmethod.VoiceFly",
+      "version": "0.2.0",
+      "build": "26",
+      "native_binaries": 11,
+      "internal_symlinks": 6
+    },
+    {
+      "app": "Voice Fly.app",
+      "identifier": "com.simonli.voicefly.settings",
+      "version": "0.2.0",
+      "build": "24",
+      "native_binaries": 1,
+      "internal_symlinks": 0
+    },
+    {
+      "app": "Voice Fly Service.app",
+      "identifier": "com.simonli.voicefly.service",
+      "version": "0.2.0",
+      "build": "22",
+      "native_binaries": 89,
+      "internal_symlinks": 54
+    }
+  ],
+  "external_non_system_load_links": 0,
+  "bundle_signature_verification": "ad-hoc signatures valid; no Developer ID/notarization",
+  "installer_scripts": "bash syntax passed",
+  "automatic_logout": false,
+  "private_runtime_files": "absent",
+  "validation_scope": "Expanded-package and isolated-profile checks on maintainer macOS 26.6.2 Apple Silicon; independent first-install check pending",
+  "isolated_keyboard_check": {
+    "schemes": 6,
+    "passed": 6,
+    "expected_candidate": "你好",
+    "blocked_paths": [
+      "Homebrew",
+      "old development directory"
+    ],
+    "real_input_source_activation": false
+  },
+  "isolated_speech_check": {
+    "passed": true,
+    "model_files_verified": 5,
+    "inference": "generated silence",
+    "normalization_cases": 24,
+    "phonetic_cases": 7,
+    "blocked_network": true,
+    "blocked_paths": [
+      "Homebrew",
+      "old development directory",
+      "system Python"
+    ],
+    "microphone_opened": false,
+    "live_service_started": false
+  },
+  "portable_python_tests": {
+    "ran": 144,
+    "passed": 144,
+    "platform": "maintainer macOS"
+  }
+}

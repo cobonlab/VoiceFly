@@ -1,6 +1,6 @@
 # Voice Fly development roadmap
 
-This is the plan for moving the existing local integration toward independent use by new users. Checked items are implemented in the 0.2.0 source preview; the completion criteria still require the stated real-user checks. Review progress twice weekly; publish a verified update weekly when feasible. Each milestone can take more than one week.
+This is the plan for moving the existing local integration toward independent use by new users. Checked items are implemented in the 0.2.0 installer/source preview; the completion criteria still require the stated real-user checks. Review progress twice weekly; publish a verified update weekly when feasible. Each milestone can take more than one week.
 
 ## Public source baseline
 
@@ -47,10 +47,11 @@ Completion requires physical-keyboard and real-host checks. Standalone unit test
 - [x] Add first-run guidance and service/microphone permission recovery entry points.
 - [ ] Verify first-run device testing with an independent new user.
 - [ ] Add coordinated updates, rollback, and uninstallation with a personal-data choice.
-- [ ] Complete model/dictionary redistribution review, signed artifacts, and Apple notarization.
+- [x] Include public model checksums, pinned dictionary provenance, bundled dependency notices and a complete installer preview.
+- [ ] Optionally add paid Apple Developer ID signing/notarization; deferred at the maintainer’s request.
 - [ ] Record supported OS/chip combinations and measured disk and memory use.
 - [ ] Have a new user complete installation and daily use without private assistance.
 
-The maintainer verified a separate artwork update without logout on macOS 26.6.2 Apple Silicon, including the native badge, Chinese typing and Control dictation. General full-component upgrades and first installation are not covered by that result. A downloadable consumer installer is not included in the 0.2.0 source preview.
+The maintainer verified a separate artwork update without logout on macOS 26.6.2 Apple Silicon, including the native badge, Chinese typing and Control dictation. General full-component upgrades and first installation are not covered by that result. The 0.2.0-preview.3 release adds a complete installer, checked after extraction with isolated profiles. It is not Developer ID signed/notarized, and independent first installation remains pending.
 
 Intel support, more languages, speaker identity filtering, and optional second-model finalization require separate validation before being advertised.

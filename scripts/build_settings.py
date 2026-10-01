@@ -22,6 +22,8 @@ def build():
     brand = ROOT / "input-method/resources/branding"
     shutil.copy2(brand / "VoiceFly.icns", contents / "Resources/VoiceFly.icns")
     shutil.copy2(brand / "VoiceFly.iconset/icon_128x128@2x.png", contents / "Resources/VoiceFlyMark.png")
+    shutil.copy2(ROOT / "LICENSE", contents / "Resources/LICENSE.txt")
+    shutil.copytree(ROOT / "third-party/rime-schemes", contents / "Resources/ThirdPartyLicenses", dirs_exist_ok=True)
     info = {
         "CFBundleIdentifier": "com.simonli.voicefly.settings",
         "CFBundleName": "Voice Fly", "CFBundleDisplayName": "Voice Fly",

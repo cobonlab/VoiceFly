@@ -37,3 +37,11 @@ Frontend build 26 uses the approved framed microphone-and-wind menu badge. The e
 Simon Li maintains input/session integration, audio lifecycle, explicit learning safeguards, numeric handling, dependency coordination, tests, documentation, and release preparation. Codex has assisted development and review since August; the maintainer remains responsible for merging and releasing changes.
 
 Each future update should link to its actual commit or issue, describe the user-visible effect, record validation and remaining limitations, and update the roadmap. There is no invented community size, download count, or prior public release history.
+
+## October 1 complete installer preview
+
+Prepared 0.2.0-preview.3 after the source preview. Found and removed a real new-user dependency: the frontend's glog/gflags links previously pointed at Homebrew. The staged package now includes those libraries and their notices, pinned common Rime resources and the complete public model/runtime. Local acquisition metadata and unused optional plugins are excluded.
+
+The extracted package's six keyboard schemes produced expected greeting candidates under a restricted process that could not read Homebrew or the old development directory. Its speech executable verified five model hashes, ran generated-silence inference, passed 24 normalization and seven synthetic phonetic cases, with network and external development/Python paths blocked. The Python regression subset ran 144 tests on this Mac, all passed. No real recording or independent first-install outcome is claimed by these checks. The installer keeps logout manual and was not used to log out the maintainer's current session.
+
+Publication is driven by a completed usability milestone. There is no documented OpenAI program requirement for a particular release interval; progress is recorded truthfully instead of manufacturing release activity.

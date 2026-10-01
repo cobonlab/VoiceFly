@@ -1,5 +1,18 @@
 # Voice Fly changelog
 
+## 0.2.0-preview.3 — 2026-10-01
+
+Complete Apple Silicon installer preview with corresponding source. No paid Developer ID signature or Apple notarization.
+
+- Include input method, native settings, speech runtime and verified public model in one package.
+- Embed glog/gflags and rewrite native dependency paths inside the staged frontend; eliminate dependence on the maintainer's Homebrew installation.
+- Stage the reviewed public schemes and pinned prelude/essay/stroke resources; omit unrelated optional plugin binaries.
+- Retain bundled dependency/model licenses and remove local pip acquisition metadata.
+- Add a packaged diagnostic that checks five model hashes, silence inference, 24 text-normalization cases and seven synthetic personal-phonetic cases without opening a microphone or starting the service.
+- Guard existing-install upgrades against active recording and wait for frontend exit; replace whole bundles and preserve private backups for recovery.
+- Keep logout manual: explain first-install/full-upgrade logout in the installer, without automatically closing user applications.
+- Verify extracted bundles, native dependencies, architecture, signatures, isolated six-scheme candidates and offline speech diagnostics. Independent first-install validation remains pending.
+
 ## 0.2.0-preview.2 — 2026-10-01
 
 Public source preview. No application installer or model weights are attached.

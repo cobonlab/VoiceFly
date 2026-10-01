@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Package only the three independently built public applications."""
-import argparse, pathlib, plistlib, shutil, subprocess
+import argparse, json, pathlib, plistlib, shutil, subprocess, sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 APPS = [
  (ROOT / 'input-method/build/Build/Products/Release/VoiceFly.app', 'Library/Input Methods/VoiceFly.app', 'com.simonli.inputmethod.VoiceFly'),
@@ -22,6 +22,8 @@ def build(appearance=False,hot_appearance=False):
   if subprocess.check_output(['lipo','-archs',str(source/'Contents/MacOS'/info['CFBundleExecutable'])],text=True).strip()!='arm64':raise ValueError('This preview is Apple Silicon only')
   destination=payload/target;destination.parent.mkdir(parents=True,exist_ok=True)
   run('/usr/bin/ditto','--rsrc','--extattr',source,destination)
+  if not appearance and identity == 'com.simonli.inputmethod.VoiceFly':
+   run(sys.executable, ROOT/'scripts/bundle_portable_frontend.py', destination)
  component=work/'components.plist'
  run('pkgbuild','--analyze','--root',payload,component)
  items=plistlib.loads(component.read_bytes())
@@ -30,22 +32,23 @@ def build(appearance=False,hot_appearance=False):
  pkg=work/'VoiceFly-component.pkg'
  scripts=ROOT/('packaging/appearance-scripts' if appearance else 'packaging/scripts')
  identity='com.simonli.voicefly.appearance' if appearance else 'com.simonli.voicefly.installer'
- if hot_appearance:
-  scripts=work/'scripts';shutil.copytree(ROOT/'packaging/hot-appearance-scripts',scripts)
+ if hot_appearance or not appearance:
+  scripts=work/'scripts';shutil.copytree(ROOT/('packaging/hot-appearance-scripts' if hot_appearance else 'packaging/scripts'),scripts)
   probe=scripts/'voicefly-update-probe'
   run('swiftc','-module-cache-path','/private/tmp/voicefly-swift-cache',ROOT/'scripts/update_probe.swift','-o',probe)
   run('codesign','--force','--sign','-',probe)
-  identity='com.simonli.voicefly.hot-appearance'
+  if hot_appearance:identity='com.simonli.voicefly.hot-appearance'
  run('pkgbuild','--root',payload,'--component-plist',component,'--scripts',scripts,'--identifier',identity,'--version',package_version,'--install-location','/',pkg)
  distribution=work/'Distribution.xml'
  distribution_text='''<?xml version="1.0" encoding="UTF-8"?>
 <installer-gui-script minSpecVersion="2">
 <title>Voice Fly</title><options customize="never" require-scripts="true" hostArchitectures="arm64"/>
+<welcome file="welcome.html" mime-type="text/html"/>
 <conclusion file="conclusion.html" mime-type="text/html"/>
 <allowed-os-versions><os-version min="26.4"/></allowed-os-versions>
 <choices-outline><line choice="default"/></choices-outline>
 <choice id="default" visible="false"><pkg-ref id="com.simonli.voicefly.installer"/></choice>
-<pkg-ref id="com.simonli.voicefly.installer" version="PACKAGE_VERSION" onConclusion="RequireLogout">VoiceFly-component.pkg</pkg-ref>
+<pkg-ref id="com.simonli.voicefly.installer" version="PACKAGE_VERSION" onConclusion="none">VoiceFly-component.pkg</pkg-ref>
 </installer-gui-script>'''
  distribution_text=distribution_text.replace('PACKAGE_VERSION',package_version)
  if appearance:
@@ -53,7 +56,8 @@ def build(appearance=False,hot_appearance=False):
  if hot_appearance:
   distribution_text=distribution_text.replace('file="appearance.html"','file="hot-appearance.html"').replace('onConclusion="RequireLogout"','onConclusion="none"')
  distribution.write_text(distribution_text)
- output=ROOT/('dist/VoiceFly-HotLogo-0.2.0-arm64.pkg' if hot_appearance else 'dist/VoiceFly-Appearance-0.2.0-arm64.pkg' if appearance else 'dist/VoiceFly-0.2.0-preview.2-arm64.pkg')
+ release=json.loads((ROOT/'SOURCE_MANIFEST.json').read_text())['version']
+ output=ROOT/('dist/VoiceFly-HotLogo-0.2.0-arm64.pkg' if hot_appearance else 'dist/VoiceFly-Appearance-0.2.0-arm64.pkg' if appearance else f'dist/VoiceFly-{release}-arm64.pkg')
  run('productbuild','--distribution',distribution,'--resources',ROOT/'packaging/resources','--package-path',work,output)
  print(output)
 if __name__=='__main__':

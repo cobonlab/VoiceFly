@@ -1,0 +1,26 @@
+[
+  {
+    "name": "gflags",
+    "versionInfo": "2.3.1",
+    "downloadLocation": "https://github.com/gflags/gflags/archive/refs/tags/v2.3.1.tar.gz",
+    "licenseConcluded": "BSD-3-Clause",
+    "checksums": [
+      {
+        "algorithm": "SHA256",
+        "checksumValue": "1b5e0648d7b94021895086e65479b4eaca7935eecfffd7dd9512eb576181c53d"
+      }
+    ]
+  },
+  {
+    "name": "gflags",
+    "versionInfo": "2.3.1",
+    "downloadLocation": "https://ghcr.io/v2/homebrew/core/gflags/blobs/sha256:edce804ef0a528dd0bea7e40318d2ee95eb17f89c4901efb776e144bdb13aced",
+    "licenseConcluded": "BSD-3-Clause",
+    "checksums": [
+      {
+        "algorithm": "SHA256",
+        "checksumValue": "edce804ef0a528dd0bea7e40318d2ee95eb17f89c4901efb776e144bdb13aced"
+      }
+    ]
+  }
+]

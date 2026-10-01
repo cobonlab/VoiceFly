@@ -20,8 +20,8 @@
     }
   ],
   "provenance": "docs/provenance/source-preview-20260930.json",
-  "version": "0.2.0-preview.2",
+  "version": "0.2.0-preview.3",
   "schema_provenance": "third-party/rime-schemes/SOURCES.json",
   "model_provenance": "service/MODEL_MANIFEST.json",
-  "release_scope": "Source preview; no application installers, model weights or private runtime data"
+  "release_scope": "Complete Apple Silicon installer preview and corresponding source; no private runtime data"
 }
