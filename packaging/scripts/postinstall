@@ -6,7 +6,7 @@ user_home=$(/usr/bin/sed -n '2p' "$state/current")
 backup=$(/usr/bin/sed -n '3p' "$state/current")
 uid=$(/usr/bin/id -u "$user")
 user_tmp=$(/usr/bin/sudo -u "$user" /usr/bin/getconf DARWIN_USER_TEMP_DIR)
-as_user() { /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
+as_user() { /bin/launchctl asuser "$uid" /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
 front='/Library/Input Methods/VoiceFly.app/Contents/MacOS/VoiceFlyInput'
 settings='/Applications/Voice Fly.app/Contents/MacOS/VoiceFlySettings'
 agent="$user_home/Library/LaunchAgents/com.simonli.voicefly.service.plist"

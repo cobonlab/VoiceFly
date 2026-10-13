@@ -1,5 +1,19 @@
 # Voice Fly changelog
 
+## 0.2.0-preview.4 — 2026-10-13
+
+Keyboard reliability maintenance release, frontend build 27.
+
+- Treat held Space as ordinary whitespace rather than repeated double/triple-tap commands; flush withheld physical taps once and pass following repeats to the host.
+- Submit deferred and fallback spaces through a marked-text commit so text clients receive a complete composition lifecycle.
+- Pass Left/Right directly to the host when there is no unfinished composition, avoiding unnecessary Rime/marked-text/caret-rectangle updates.
+- Reset cached caret and selection after commits and input-source activation.
+- Run installer user commands in the logged-in GUI bootstrap environment so ABC/idle checks read the desktop's current input source instead of stale installer-context state.
+- Add three held-Space regressions: 63 Swift tests passed; native Release build and strict bundle signatures passed.
+- Installed build 27 on the maintainer's Mac with a recoverable build-26 backup; the speech service process was preserved. Reports concern Codex, Telegram, WeChat and web inputs; resolution in every host is still awaiting real-use confirmation.
+
+Double/triple-Space gestures are retained, including a wait of up to 0.55 seconds for a single plain Space when phrase learning is enabled. This release does not claim that all reported host issues are resolved. Full-installer independent-user validation remains pending.
+
 ## 0.2.0-preview.3 — 2026-10-01
 
 Complete Apple Silicon installer preview with corresponding source. No paid Developer ID signature or Apple notarization.

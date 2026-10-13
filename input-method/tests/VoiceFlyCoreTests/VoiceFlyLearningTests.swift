@@ -334,6 +334,32 @@ final class VisiblePhraseExtractorTests: XCTestCase {
 }
 
 final class SpaceGestureTests: XCTestCase {
+  func testHeldSpaceFlushesOneTapWithoutEnteringManualMode() {
+    var gesture = VoiceFlySpaceGesture()
+    _ = gesture.tap(at: 1)
+    XCTAssertEqual(gesture.settleForKeyRepeat(), [.insertSpaces(1)])
+    for _ in 0..<20 {
+      XCTAssertEqual(gesture.settleForKeyRepeat(), [])
+    }
+    XCTAssertEqual(gesture.tapCount, 0)
+    XCTAssertNil(gesture.startedAt)
+  }
+
+  func testRepeatAfterCandidateCommitDoesNotInsertCommitSpaceAgain() {
+    var gesture = VoiceFlySpaceGesture()
+    _ = gesture.tap(at: 1, fallbackSpaces: 0)
+    XCTAssertEqual(gesture.settleForKeyRepeat(), [])
+    XCTAssertEqual(gesture.settle(), [])
+  }
+
+  func testRepeatAfterTwoTapsFlushesSpacesInsteadOfRequestingLearning() {
+    var gesture = VoiceFlySpaceGesture()
+    _ = gesture.tap(at: 1)
+    _ = gesture.tap(at: 1.1)
+    XCTAssertEqual(gesture.settleForKeyRepeat(), [.insertSpaces(2)])
+    XCTAssertEqual(gesture.settle(), [])
+  }
+
   func testDoubleSpaceRequestsAnExplicitLengthOnlyAfterTripleSpaceWindowCloses() {
     var gesture = VoiceFlySpaceGesture(timeout: 0.5)
     XCTAssertEqual(gesture.tap(at: 1.0), [])

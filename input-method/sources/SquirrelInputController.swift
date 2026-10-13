@@ -291,7 +291,9 @@ final class SquirrelInputController: IMKInputController {
     case .keyDown:
       let isPlainSpaceEvent = event.charactersIgnoringModifiers?.first == " " &&
         modifiers.intersection([.command, .control, .option, .shift]).isEmpty
-      if !isPlainSpaceEvent {
+      if isPlainSpaceEvent && event.isARepeat {
+        settlePendingPhraseLearningGesture(forKeyRepeat: true)
+      } else if !isPlainSpaceEvent {
         // Settle a pending single/double tap before this key so delayed spaces
         // can never be inserted after newer text.
         settlePendingPhraseLearningGesture()
@@ -320,6 +322,21 @@ final class SquirrelInputController: IMKInputController {
 
       if handleChaiziKeyDown(event) {
         handled = true
+        break
+      }
+
+      // With no composition, cursor movement belongs entirely to the host.
+      // Do not refresh marked text or query its caret rectangle on every
+      // arrow/repeat: some remote text clients change their editing state in
+      // response, even though Rime declined the key.
+      let hasComposition = rimeAPI.get_input(session).map {
+        !String(cString: $0).isEmpty
+      } ?? false
+      if !hasComposition && !chaiziMode &&
+          ([UInt16(123), 124].contains(event.keyCode) ||
+           (isPlainSpaceEvent && event.isARepeat)) {
+        phraseLearningJournal.reset()
+        recentPhraseCommit.invalidate()
         break
       }
 
@@ -363,7 +380,7 @@ final class SquirrelInputController: IMKInputController {
                                                            caps: modifiers.contains(.capsLock))
         if rimeKeycode != 0 {
           let rimeModifiers = SquirrelKeycode.osxModifiersToRime(modifiers: modifiers)
-          if char == " " && rimeModifiers == 0 && handlePhraseLearningSpace() {
+          if char == " " && rimeModifiers == 0 && !event.isARepeat && handlePhraseLearningSpace() {
             handled = true
           } else {
             let hadComposition = rimeAPI.get_input(session).map {
@@ -388,7 +405,7 @@ final class SquirrelInputController: IMKInputController {
               hadComposition: hadComposition,
               handled: handled
             )
-            if isUnmodifiedSpace && hadComposition {
+            if isUnmodifiedSpace && hadComposition && !event.isARepeat {
               let compositionIsNowEmpty = rimeAPI.get_input(session).map {
                 String(cString: $0).isEmpty
               } ?? true
@@ -499,6 +516,8 @@ final class SquirrelInputController: IMKInputController {
       lastModifiers.remove(.capsLock)
     }
     preedit = ""
+    caretPos = 0
+    selRange = NSRange(location: 0, length: 0)
     if session != 0 {
       let state = rimeAPI.get_option(session, "ascii_mode")
       let label = rimeAPI.get_state_label_abbreviated(session, "ascii_mode", state, true).asString
@@ -1085,11 +1104,13 @@ private extension SquirrelInputController {
     }
   }
 
-  private func settlePendingPhraseLearningGesture() {
+  private func settlePendingPhraseLearningGesture(forKeyRepeat: Bool = false) {
     guard phraseSpaceGesture.tapCount > 0 else { return }
     pendingPhraseLearningSpaceTimer?.invalidate()
     pendingPhraseLearningSpaceTimer = nil
-    performPhraseLearningActions(phraseSpaceGesture.settle())
+    performPhraseLearningActions(forKeyRepeat
+      ? phraseSpaceGesture.settleForKeyRepeat()
+      : phraseSpaceGesture.settle())
   }
 
   private func cancelPhraseLearningState() {
@@ -1106,7 +1127,7 @@ private extension SquirrelInputController {
     for action in actions {
       switch action {
       case let .insertSpaces(count):
-        client?.insertText(String(repeating: " ", count: count), replacementRange: .empty)
+        commit(string: String(repeating: " ", count: count), establishMarkedText: true)
         phraseLearningJournal.reset()
         recentPhraseCommit.invalidate()
       case let .requestPhraseLength(fallbackSpaces):
@@ -1146,9 +1167,10 @@ private extension SquirrelInputController {
 
     guard !phraseLengthChoices.isEmpty else {
       if fallbackSpaces > 0 {
-        client?.insertText(
+        commit(
+          string:
           String(repeating: " ", count: fallbackSpaces),
-          replacementRange: .empty
+          establishMarkedText: true
         )
       }
       phraseLearningJournal.reset()
@@ -1416,6 +1438,8 @@ private extension SquirrelInputController {
     let isPlainSpace = event.charactersIgnoringModifiers?.first == " " &&
       event.modifierFlags.intersection([.command, .control, .option]).isEmpty
     if isPlainSpace {
+      // Repeats must not query or exit the manual mode as a triple tap.
+      if event.isARepeat { return true }
       let hasRawInput = rimeAPI.get_input(session).map { !String(cString: $0).isEmpty } ?? false
       if !hasRawInput {
         return handleChaiziQuerySpace()
@@ -1968,12 +1992,12 @@ private extension SquirrelInputController {
     }
   }
 
-  func commit(string: String) {
+  func commit(string: String, establishMarkedText: Bool = false) {
     guard let client = client else { return }
 
-    let forceMarkedText =
+    let forceMarkedText = establishMarkedText || (
       session != 0 &&
-      rimeAPI.get_option(session, "force_marked_text_for_direct_commit")
+      rimeAPI.get_option(session, "force_marked_text_for_direct_commit"))
 
     // Direct commits such as full-width punctuation do not necessarily have an
     // active marked-text phase. Some NSTextInputClient implementations require
@@ -1989,6 +2013,8 @@ private extension SquirrelInputController {
 
     client.insertText(string, replacementRange: .empty)
     preedit = ""
+    caretPos = 0
+    selRange = NSRange(location: 0, length: 0)
     hidePalettes()
   }
 

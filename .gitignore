@@ -30,3 +30,4 @@ service/lexicon/generated/
 service/lexicon/profiles/
 personal_usage.json
 voicefly_learned_phrases.txt
+input-method/build-*/

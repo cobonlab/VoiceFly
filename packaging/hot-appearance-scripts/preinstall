@@ -6,7 +6,7 @@ user=$(/usr/bin/stat -f%Su /dev/console)
 user_home=$(/usr/bin/dscl . -read "/Users/$user" NFSHomeDirectory | /usr/bin/sed 's/^NFSHomeDirectory: //')
 uid=$(/usr/bin/id -u "$user")
 user_tmp=$(/usr/bin/sudo -u "$user" /usr/bin/getconf DARWIN_USER_TEMP_DIR)
-as_user() { /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
+as_user() { /bin/launchctl asuser "$uid" /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
 script_dir=$(/usr/bin/dirname "$0")
 front='/Library/Input Methods/VoiceFly.app'
 settings='/Applications/Voice Fly.app'

@@ -45,3 +45,12 @@ Prepared 0.2.0-preview.3 after the source preview. Found and removed a real new-
 The extracted package's six keyboard schemes produced expected greeting candidates under a restricted process that could not read Homebrew or the old development directory. Its speech executable verified five model hashes, ran generated-silence inference, passed 24 normalization and seven synthetic phonetic cases, with network and external development/Python paths blocked. The Python regression subset ran 144 tests on this Mac, all passed. No real recording or independent first-install outcome is claimed by these checks. The installer keeps logout manual and was not used to log out the maintainer's current session.
 
 Publication is driven by a completed usability milestone. There is no documented OpenAI program requirement for a particular release interval; progress is recorded truthfully instead of manufacturing release activity.
+
+
+## October 13, 2026: keyboard reliability maintenance
+
+Daily-use reports in Codex, Telegram, WeChat and web text fields prompted frontend build 27. Held Space no longer counts as double/triple taps; deferred spaces use a composition-aware commit. With no composition, Left/Right goes directly to the host without unnecessary Rime/UI refresh. Commit and activation clear cached caret/selection. Installer user commands now enter the logged-in GUI bootstrap environment: a read-only comparison showed that plain sudo reported stale Voice Fly selection while the GUI environment correctly reported ABC.
+
+The maintainer-only frontend update succeeded with a build-26 backup, valid signatures, matching installed binary and unchanged speech-service process. Public preview.4 is independently repackaged from the rebuilt frontend and reviewed public resources; the installed bundle and private backup are not release inputs. Local Swift: 63 passed. Local Python 3.14: 144 run, 143 passed, one skipped; GitHub CI separately runs Python 3.13. Extracted installer integrity/dependency/architecture checks passed. Packaged speech checks passed five hashes, generated-silence inference, 24 normalization and seven synthetic phonetic cases without microphone/service startup. Exact-commit cloud status is recorded by GitHub.
+
+Real-use confirmation across all reported text fields remains pending. The existing single-Space delay of up to 0.55 seconds is retained with multi-tap learning. This maintenance release does not establish universal host compatibility or independent first installation.

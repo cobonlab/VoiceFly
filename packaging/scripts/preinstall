@@ -16,7 +16,7 @@ backup="$user_home/Library/Application Support/VoiceFly/Backups/upgrade-$(/bin/d
 /usr/sbin/chown "$uid" "$user_home/Library/Application Support/VoiceFly" "$user_home/Library/Application Support/VoiceFly/Backups"
 /bin/chmod 700 "$user_home/Library/Application Support/VoiceFly"
 user_tmp=$(/usr/bin/sudo -u "$user" /usr/bin/getconf DARWIN_USER_TEMP_DIR)
-as_user() { /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
+as_user() { /bin/launchctl asuser "$uid" /usr/bin/sudo -u "$user" /usr/bin/env HOME="$user_home" TMPDIR="$user_tmp" "$@"; }
 script_dir=$(/usr/bin/dirname "$0")
 if /usr/bin/pgrep -u "$uid" -x VoiceFlyService >/dev/null; then
  as_user "$script_dir/voicefly-update-probe" --ready || { echo 'Finish typing/dictation and select ABC before updating Voice Fly.' >&2; exit 1; }

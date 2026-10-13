@@ -3,7 +3,7 @@
 ## 普通用户安装
 
 1. 确认你的电脑是 **M 系列 Mac，系统为 macOS 26.4 或更新版本**。当前安装包不支持 Intel Mac 或更早的系统。
-2. 从 [GitHub 发布页面](https://github.com/cobonlab/VoiceFly/releases/tag/v0.2.0-preview.3)下载 `VoiceFly-0.2.0-preview.3-arm64.pkg`。这是完整安装包；页面里的 `Source code` 和 `-source.tar.gz` 是给开发者的源码。
+2. 从 [GitHub 发布页面](https://github.com/cobonlab/VoiceFly/releases/tag/v0.2.0-preview.4)下载 `VoiceFly-0.2.0-preview.4-arm64.pkg`。这是完整安装包；页面里的 `Source code` 和 `-source.tar.gz` 是给开发者的源码。
 3. 双击安装包。如果提示无法验证开发者，先尝试打开，再到 **系统设置 → 隐私与安全性 → 仍要打开**，确认安装。本预览版没有苹果 Developer ID 签名和公证。只对你确认来自本仓库的安装包操作；不要关闭整个系统的安全检查。苹果说明：[打开未公证的软件](https://support.apple.com/en-us/102445)。如果系统没有这个选项，请提供具体提示和系统版本，以便排查；不要把所有拦截都当成同一种情况。
 4. 按安装窗口完成操作。写入系统输入法位置时，macOS 会要求管理员密码或设备认证。如果已安装 Voice Fly，请先结束文字和语音输入，再切到 ABC。
 5. **保存工作，然后手动注销 Mac 并重新登录。** 首次安装或完整升级需要重新打开用户会话。安装程序不会自动替你注销，可以等其他工作完成后再操作。
@@ -17,7 +17,7 @@
 
 ## English installation summary
 
-Download the `.pkg` from [v0.2.0-preview.3](https://github.com/cobonlab/VoiceFly/releases/tag/v0.2.0-preview.3). The package supports Apple Silicon/macOS 26.4+ and contains all baseline runtime/model components. No developer tools, separate Squirrel installation, API key or Apple developer membership are needed. This preview is ad-hoc signed, without Developer ID or notarization. If macOS blocks opening, follow its per-app **Privacy & Security → Open Anyway** flow after confirming the source. Finish typing/dictation and select ABC before an upgrade. Save work, log out/in manually after full installation, then approve the input method and microphone. The installer will not log you out.
+Download the `.pkg` from [v0.2.0-preview.4](https://github.com/cobonlab/VoiceFly/releases/tag/v0.2.0-preview.4). The package supports Apple Silicon/macOS 26.4+ and contains all baseline runtime/model components. No developer tools, separate Squirrel installation, API key or Apple developer membership are needed. This preview is ad-hoc signed, without Developer ID or notarization. If macOS blocks opening, follow its per-app **Privacy & Security → Open Anyway** flow after confirming the source. Finish typing/dictation and select ABC before an upgrade. Save work, log out/in manually after full installation, then approve the input method and microphone. The installer will not log you out.
 
 ## What was checked
 

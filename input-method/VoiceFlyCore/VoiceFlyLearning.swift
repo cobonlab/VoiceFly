@@ -420,6 +420,13 @@ struct VoiceFlySpaceGesture {
     return fallbackSpaceCount > 0 ? [.insertSpaces(fallbackSpaceCount)] : []
   }
 
+  // A held key is ordinary whitespace, never a multi-tap command. Flush only
+  // the withheld physical taps; the current repeat is passed to the host.
+  mutating func settleForKeyRepeat() -> [VoiceFlySpaceGestureAction] {
+    defer { reset() }
+    return fallbackSpaceCount > 0 ? [.insertSpaces(fallbackSpaceCount)] : []
+  }
+
   mutating func cancel() {
     reset()
   }
