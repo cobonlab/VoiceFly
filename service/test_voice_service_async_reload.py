@@ -135,6 +135,18 @@ class FakeService:
     def terminate_for_audio_recovery(self):
         self.terminated_for_recovery = True
 
+    def request_audio_recovery(self, *args):
+        return SERVICE.VoiceService.request_audio_recovery(self, *args)
+
+    def ensure_finalization_deadline(self, *args):
+        return SERVICE.VoiceService.ensure_finalization_deadline(self, *args)
+
+    def set_audio_stage(self, *args):
+        return SERVICE.VoiceService.set_audio_stage(self, *args)
+
+    def close_microphone(self, *args):
+        return SERVICE.VoiceService.close_microphone(self, *args)
+
 class InlineSnapshotTests(unittest.TestCase):
     def decoder_for(self, path, enabled=True):
         return types.SimpleNamespace(enabled=enabled, hotwords_file=path)
@@ -482,6 +494,8 @@ class RecordingLifecycleTests(unittest.TestCase):
         refiner=None,
         shadow_runner=None,
         speech_gate=None,
+        close_behavior=None,
+        read_behavior=None,
     ):
         fake = FakeService(snapshot=SERVICE.EMPTY_HOTWORD_SNAPSHOT)
         if refiner is not None:
@@ -509,6 +523,8 @@ class RecordingLifecycleTests(unittest.TestCase):
                 self.index = 0
 
             def read(self, _frame_samples):
+                if read_behavior is not None:
+                    return read_behavior(fake)
                 if self.index == len(frame_results) - 1:
                     fake.stop_event.set()
                 buf = np.full((8, 1), self.index, dtype=np.float32)
@@ -523,6 +539,8 @@ class RecordingLifecycleTests(unittest.TestCase):
             name="test microphone",
         )
         active_input.selection_reason = "system-default"
+        if close_behavior is not None:
+            active_input.close.side_effect = lambda: close_behavior(fake)
         gate = speech_gate or PassThroughSpeechStartGate(48000)
         with (
             mock.patch.object(
@@ -548,6 +566,95 @@ class RecordingLifecycleTests(unittest.TestCase):
             prefer_builtin=SERVICE.PREFER_BUILTIN_MIC,
         )
         return fake, stream, active_input
+
+    def test_final_text_is_delivered_before_close_and_service_stays_busy(self):
+        def closing(fake):
+            finals = [p for p in fake.posts if p[0] == SERVICE.FINAL_NAME]
+            self.assertEqual(len(finals), 1)
+            self.assertEqual(finals[0][2], "ready ")
+            self.assertNotEqual(fake.phase, "idle")
+            SERVICE.VoiceService.start_recording(fake, "next-session")
+            self.assertEqual(fake.posts[-1][0], SERVICE.ERROR_NAME)
+        with mock.patch.object(SERVICE, "normalize", side_effect=lambda text: text):
+            fake, _, active = self.run_recording(["ready"], [False], close_behavior=closing)
+        self.assertEqual(fake.phase, "idle")
+        active.close.assert_called_once()
+
+    def test_hung_close_triggers_recovery_without_discarding_final_text(self):
+        release = threading.Event()
+        observed = []
+        def closing(fake):
+            observed.append(fake)
+            release.wait(0.15)
+        with (
+            mock.patch.object(SERVICE, "normalize", side_effect=lambda text: text),
+            mock.patch.object(SERVICE, "MICROPHONE_CLOSE_TIMEOUT_SECONDS", 0.025),
+            mock.patch.object(SERVICE, "write_audio_recovery"),
+            mock.patch.object(SERVICE, "write_service_status"),
+        ):
+            fake, _, active = self.run_recording(["ready"], [False], close_behavior=closing)
+        self.assertTrue(fake.terminated_for_recovery)
+        self.assertEqual(fake.phase, "recovering")
+        self.assertEqual([p[2] for p in fake.posts if p[0] == SERVICE.FINAL_NAME], ["ready "])
+        active.close.assert_called_once()
+        fake.finalization_deadline.finish()
+
+    def test_failed_close_does_not_report_idle(self):
+        def closing(_fake):
+            raise RuntimeError("cleanup failed")
+        with (
+            mock.patch.object(SERVICE, "normalize", side_effect=lambda text: text),
+            mock.patch.object(SERVICE, "write_audio_recovery"),
+            mock.patch.object(SERVICE, "write_service_status"),
+        ):
+            fake, _, active = self.run_recording(["ready"], [False], close_behavior=closing)
+        self.assertTrue(fake.terminated_for_recovery)
+        self.assertEqual(fake.phase, "recovering")
+        active.close.assert_called_once()
+        fake.finalization_deadline.finish()
+
+    def test_finished_session_cancels_deadline_and_old_timeout_cannot_restart_new_one(self):
+        fake = FakeService(snapshot=SERVICE.EMPTY_HOTWORD_SNAPSHOT)
+        fake.phase = "finalizing"
+        fake.session_id = "new-session"
+        with mock.patch.object(SERVICE, "write_audio_recovery") as diagnostic:
+            self.assertFalse(fake.request_audio_recovery("old-session", "finalizing"))
+        diagnostic.assert_not_called()
+        self.assertFalse(fake.terminated_for_recovery)
+
+    def test_finalization_timeout_recovers_when_worker_never_returns(self):
+        fake = FakeService(snapshot=SERVICE.EMPTY_HOTWORD_SNAPSHOT)
+        fake.phase = "finalizing"
+        fake.session_id = "blocked-session"
+        recovered = threading.Event()
+        fake.terminate_for_audio_recovery = recovered.set
+        with (
+            mock.patch.object(SERVICE, "FINALIZATION_TIMEOUT_SECONDS", 0.025),
+            mock.patch.object(SERVICE, "write_audio_recovery"),
+            mock.patch.object(SERVICE, "write_service_status"),
+        ):
+            fake.ensure_finalization_deadline("blocked-session")
+            self.assertTrue(recovered.wait(1))
+        self.assertEqual(fake.phase, "recovering")
+        self.assertEqual(fake.posts[-1][0], SERVICE.ERROR_NAME)
+        fake.finalization_deadline.finish()
+
+    def test_stalled_capture_recovers_without_closing_device_under_active_reader(self):
+        def reading(fake):
+            fake.stop_event.set()
+            threading.Event().wait(0.2)
+            return np.zeros((8, 1), dtype=np.float32), False
+        with (
+            mock.patch.object(SERVICE, "FINALIZATION_TIMEOUT_SECONDS", 0.025),
+            mock.patch.object(SERVICE, "write_audio_recovery"),
+            mock.patch.object(SERVICE, "write_service_status"),
+        ):
+            fake, _, active = self.run_recording(["unused"], [False], read_behavior=reading)
+        self.assertTrue(fake.terminated_for_recovery)
+        self.assertEqual(fake.phase, "recovering")
+        active.close.assert_not_called()
+        self.assertFalse(any(p[0] == SERVICE.FINAL_NAME for p in fake.posts))
+        fake.finalization_deadline.finish()
 
     def test_prespeech_audio_never_reaches_the_recognizer(self):
         class ScriptedGate(PassThroughSpeechStartGate):

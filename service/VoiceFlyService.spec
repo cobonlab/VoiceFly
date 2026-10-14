@@ -44,7 +44,7 @@ coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name="VoiceFlyS
 app = BUNDLE(coll, name="Voice Fly Service.app", bundle_identifier="com.simonli.voicefly.service",
              version="0.2.0", info_plist={
                  "CFBundleDisplayName": "Voice Fly 语音服务", "CFBundleName": "Voice Fly Service",
-                 "CFBundleShortVersionString": "0.2.0", "CFBundleVersion": "22", "LSUIElement": True,
+                 "CFBundleShortVersionString": "0.2.0", "CFBundleVersion": "23", "LSUIElement": True,
                  "LSMinimumSystemVersion": "26.4", "LSMultipleInstancesProhibited": True, "NSHighResolutionCapable": True,
                  "NSMicrophoneUsageDescription": "Voice Fly 需要麦克风，在本机把你说的话转成文字。录音不会上传。",
              })

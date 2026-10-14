@@ -69,7 +69,12 @@ from voice_streaming_protocol import (  # noqa: E402
     PartialStabilityTracker,
     RevisionAttributionTracker,
 )
-from voice_settings import prefer_builtin_microphone, write_service_status
+from voice_settings import prefer_builtin_microphone, write_service_status, write_audio_recovery
+from voice_recovery import (
+    RecoveryDeadline,
+    FINALIZATION_TIMEOUT_SECONDS,
+    MICROPHONE_CLOSE_TIMEOUT_SECONDS,
+)
 SAMPLE_RATE = 16000
 
 
@@ -561,6 +566,9 @@ class VoiceService(Foundation.NSObject):
         self.stream = None
         self.stop_event = threading.Event()
         self.stop_requested_at = None
+        self.finalization_deadline = None
+        self.audio_stage = "loading"
+        self.audio_stage_started_at = time.monotonic()
         self.hotword_refresh_in_progress = False
         self.hotword_refresh_requested = False
         self.hotword_refresh_epoch = 0
@@ -664,6 +672,8 @@ class VoiceService(Foundation.NSObject):
         normalize("一百", apply_personal_phonetics=False, diagnostic_logger=None)
         with self.lock:
             self.phase = "idle"
+            self.audio_stage = "idle"
+            self.audio_stage_started_at = time.monotonic()
         self.center.addObserver_selector_name_object_(
             self, "handleStart:", START_NAME, None
         )
@@ -682,7 +692,9 @@ class VoiceService(Foundation.NSObject):
             try:
                 with self.lock:
                     phase = self.phase
-                write_service_status(phase)
+                    stage = getattr(self, "audio_stage", phase)
+                    elapsed = max(0, time.monotonic() - self.audio_stage_started_at)
+                write_service_status(phase, stage=stage, stage_seconds=elapsed)
             except Exception:
                 pass  # Status display must never interrupt speech recognition.
             time.sleep(5)
@@ -841,6 +853,64 @@ class VoiceService(Foundation.NSObject):
     @objc.python_method
     def terminate_for_audio_recovery(self):
         os._exit(75)
+
+    @objc.python_method
+    def request_audio_recovery(self, session_id, stage):
+        with self.lock:
+            if self.session_id != session_id or self.phase in {"idle", "recovering"}:
+                return False
+            self.phase = "recovering"
+            self.stop_event.set()
+            elapsed = max(0, time.monotonic() - getattr(self, "audio_stage_started_at", time.monotonic()))
+        # A notification or filesystem operation must not itself strand the
+        # recovery. The final exit releases native threads/locks as a unit.
+        exit_timer = threading.Timer(0.25, self.terminate_for_audio_recovery)
+        exit_timer.daemon = True
+        exit_timer.start()
+        try:
+            write_audio_recovery(stage, elapsed)
+            write_service_status("recovering", error="audio_timeout", stage=stage, stage_seconds=elapsed)
+            self.post(ERROR_NAME, session_id, message="语音收尾超时，语音服务正在自动恢复，请稍后再试。")
+        finally:
+            try:
+                self.terminate_for_audio_recovery()
+            finally:
+                exit_timer.cancel()
+        return True
+
+    @objc.python_method
+    def set_audio_stage(self, session_id, stage):
+        with self.lock:
+            if self.session_id == session_id and self.phase != "recovering":
+                self.audio_stage = stage
+                self.audio_stage_started_at = time.monotonic()
+
+    @objc.python_method
+    def ensure_finalization_deadline(self, session_id):
+        with self.lock:
+            if self.session_id != session_id or self.phase in {"idle", "recovering"}:
+                return
+            if getattr(self, "finalization_deadline", None) is None:
+                self.finalization_deadline = RecoveryDeadline(
+                    FINALIZATION_TIMEOUT_SECONDS,
+                    lambda: self.request_audio_recovery(session_id, "finalizing"),
+                )
+
+    @objc.python_method
+    def close_microphone(self, session_id, active_input):
+        self.set_audio_stage(session_id, "microphone-close")
+        deadline = RecoveryDeadline(
+            MICROPHONE_CLOSE_TIMEOUT_SECONDS,
+            lambda: self.request_audio_recovery(session_id, "microphone-close"),
+        )
+        try:
+            active_input.close()
+        except Exception:
+            # Do not reuse uncertain native device state after cleanup fails.
+            self.request_audio_recovery(session_id, "microphone-close")
+        finally:
+            finished = deadline.finish()
+        return finished and self.phase != "recovering"
 
     @objc.python_method
     def handle_microphone_open_timeout(self, session_id, attempt):
@@ -1065,6 +1135,9 @@ class VoiceService(Foundation.NSObject):
                 self.stream = stream
                 self.stop_event.clear()
                 self.stop_requested_at = None
+                self.finalization_deadline = None
+                self.audio_stage = "microphone-open"
+                self.audio_stage_started_at = time.monotonic()
         if failure_message:
             print(f"[录音] 无法创建会话 session={session_id}: {failure_message}", flush=True)
             self.post(ERROR_NAME, session_id, message=failure_message)
@@ -1114,6 +1187,7 @@ class VoiceService(Foundation.NSObject):
             self.phase = "finalizing"
             self.stop_requested_at = time.monotonic()
             self.stop_event.set()
+            self.ensure_finalization_deadline(session_id)
         print(f"[录音] 停止 session={session_id}", flush=True)
 
     @objc.python_method
@@ -1243,10 +1317,11 @@ class VoiceService(Foundation.NSObject):
                     open_attempt.settled.set()
             open_watchdog.cancel()
             if open_was_timed_out:
-                active_input.close()
+                self.close_microphone(session_id, active_input)
                 active_input = None
                 return
             mic = active_input.stream
+            self.set_audio_stage(session_id, "recording")
             capture_rate = active_input.candidate.sample_rate
             frame_samples = active_input.candidate.read_frames
             capture_queue = queue.Queue(
@@ -1260,6 +1335,7 @@ class VoiceService(Foundation.NSObject):
                 try:
                     while True:
                         if self.stop_event.is_set():
+                            self.ensure_finalization_deadline(session_id)
                             requested_at = getattr(self, "stop_requested_at", None)
                             if not isinstance(requested_at, (int, float)):
                                 requested_at = time.monotonic()
@@ -1301,9 +1377,13 @@ class VoiceService(Foundation.NSObject):
             )
             try:
                 while not capture_done.is_set() or not capture_queue.empty():
+                    if self.phase == "recovering":
+                        return
                     try:
                         buf, overflowed = capture_queue.get(timeout=0.05)
                     except queue.Empty:
+                        if self.stop_event.is_set():
+                            self.ensure_finalization_deadline(session_id)
                         continue
                     if overflowed:
                         overflow_count += 1
@@ -1382,11 +1462,16 @@ class VoiceService(Foundation.NSObject):
                 if capture_error:
                     raise capture_error[0]
             finally:
+                self.ensure_finalization_deadline(session_id)
+                self.stop_event.set()
                 if capture_thread is not None:
                     capture_thread.join(timeout=1.0)
-                active_input.close()
-                active_input = None
+                    if capture_thread.is_alive():
+                        self.request_audio_recovery(session_id, "capture-stop")
 
+            self.set_audio_stage(session_id, "text-finalization")
+            if self.phase == "recovering":
+                return
             stream.input_finished()
             while recognizer.is_ready(stream):
                 recognizer.decode_stream(stream)
@@ -1417,6 +1502,8 @@ class VoiceService(Foundation.NSObject):
             # Leave one separator after every non-empty dictation commit so a
             # later Control-held session starts as a distinct phrase.
             final_text = finalize_spacing(final_text)
+            if self.phase == "recovering":
+                return
             self.post(FINAL_NAME, session_id, text=final_text)
             decode_total_ms = sum(decode_durations_ms)
             normalize_total_ms = sum(normalize_durations_ms)
@@ -1468,19 +1555,25 @@ class VoiceService(Foundation.NSObject):
                     open_attempt.settled.set()
             if open_watchdog is not None:
                 open_watchdog.cancel()
-            if active_input is not None:
-                try:
-                    active_input.close()
-                except Exception as exc:
-                    print(f"[录音] 关闭麦克风失败 category={type(exc).__name__}", flush=True)
+            if active_input is not None and self.phase != "recovering":
+                # FINAL was already delivered above. Keep the service busy
+                # until the device is actually released; never overlap sessions.
+                self.ensure_finalization_deadline(session_id)
+                self.close_microphone(session_id, active_input)
+                active_input = None
             became_idle = False
             with self.lock:
-                if self.session_id == session_id:
-                    self.phase = "idle"
-                    self.session_id = ""
-                    self.stream = None
-                    self.stop_event.clear()
-                    became_idle = True
+                if self.session_id == session_id and self.phase != "recovering":
+                    deadline = getattr(self, "finalization_deadline", None)
+                    if deadline is None or deadline.finish():
+                        self.finalization_deadline = None
+                        self.phase = "idle"
+                        self.audio_stage = "idle"
+                        self.audio_stage_started_at = time.monotonic()
+                        self.session_id = ""
+                        self.stream = None
+                        self.stop_event.clear()
+                        became_idle = True
             if became_idle:
                 # Lightweight refresh only; the recognizer is never rebuilt.
                 self.schedule_hotword_refresh()
@@ -1536,6 +1629,10 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--self-test-audio-recovery" in sys.argv[1:]:
+        from voice_recovery_probe import run
+        index = sys.argv.index("--self-test-audio-recovery")
+        raise SystemExit(run(sys.argv[index + 1]))
     if "--self-test-bundle" in sys.argv[1:]:
         raise SystemExit(run_bundle_self_test())
     if "--self-test-itn" in sys.argv[1:]:

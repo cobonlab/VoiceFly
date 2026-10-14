@@ -1,5 +1,19 @@
 # Voice Fly changelog
 
+## 0.2.0-preview.5 — 2026-10-14
+
+Automatic recovery for stalled recording finalization and microphone shutdown. Speech service build 23; installer receipt 0.2.0.28; keyboard frontend remains build 27.
+
+- Bound post-release finalization to 6 seconds and microphone cleanup to 3 seconds; timeout exits the stuck process for launchd recovery.
+- Deliver finalized text before microphone cleanup, while refusing a new recording until the previous device is released.
+- Preserve errors from native stop/close; never mark a failed cleanup as idle or overlap it with a new session.
+- Keep deadlines session-local, cancel successful completion and protect process recovery from stalled error notification/diagnostic writes.
+- Add privacy-limited recovery records and health stage/timing; no audio or recognized text is persisted.
+- Verify 180 focused service/audio/text tests, 153 portable tests (152 passed, one skipped), 63 Swift tests, packaged model/normalization diagnostics and isolated launchd fault recovery with a new PID.
+- Installed the tested service on the maintainer's Mac with the previous service backed up. The maintainer confirmed two consecutive Control-held dictations both committed normally.
+
+Underlying CoreAudio/device faults may still occur; recovery takes several seconds, and an utterance that times out before finalization may need to be repeated. Independent full installation and wider device coverage remain pending. See [release notes](docs/releases/0.2.0-preview.5.md).
+
 ## 0.2.0-preview.4 — 2026-10-13
 
 Keyboard reliability maintenance release, frontend build 27.

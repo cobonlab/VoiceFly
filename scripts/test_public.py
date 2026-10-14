@@ -7,6 +7,7 @@ from pathlib import Path
 SERVICE = Path(__file__).resolve().parents[1] / "service"
 MODULES = (
     "test_voice_settings",
+    "test_voice_recovery",
     "test_voice_audio",
     "test_voice_hotwords",
     "test_voice_personal_phonetics",

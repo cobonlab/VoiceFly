@@ -1,6 +1,6 @@
 {
   "status": "maintained-preview",
-  "date": "2026-10-13",
+  "date": "2026-10-14",
   "input_method_base": "0cd71a6130a5866b0ae6ba0494929ebdc8211194",
   "dependencies": [
     {
@@ -20,8 +20,9 @@
     }
   ],
   "provenance": "docs/provenance/source-preview-20260930.json",
-  "version": "0.2.0-preview.4",
+  "version": "0.2.0-preview.5",
   "schema_provenance": "third-party/rime-schemes/SOURCES.json",
   "model_provenance": "service/MODEL_MANIFEST.json",
-  "release_scope": "Complete Apple Silicon installer preview and corresponding source; no private runtime data"
+  "release_scope": "Complete Apple Silicon installer preview and corresponding source; no private runtime data",
+  "package_version": "0.2.0.28"
 }

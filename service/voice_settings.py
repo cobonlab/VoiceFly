@@ -24,7 +24,7 @@ def prefer_builtin_microphone(default=False, path=None):
         return default
 
 
-def write_service_status(phase, *, error=None, directory=None):
+def write_service_status(phase, *, error=None, stage=None, stage_seconds=None, directory=None):
     root = Path(directory) if directory else support_directory()
     if root.is_symlink():
         return
@@ -33,6 +33,9 @@ def write_service_status(phase, *, error=None, directory=None):
     if error:
         # Caller supplies a fixed category, never an exception or recognized text.
         document["error"] = error
+    if stage is not None:
+        document["stage"] = stage
+        document["stage_seconds"] = round(max(0, float(stage_seconds or 0)), 3)
     destination = root / "service-status.json"
     if destination.is_symlink():
         return
@@ -46,3 +49,26 @@ def write_service_status(phase, *, error=None, directory=None):
             os.unlink(temporary)
         except FileNotFoundError:
             pass
+
+
+def write_audio_recovery(stage, elapsed, *, directory=None):
+    """Keep only the latest fixed-category recovery record; never session text."""
+    if stage not in {"finalizing", "microphone-close", "capture-stop"}:
+        raise ValueError("unknown recovery stage")
+    root = Path(directory) if directory else support_directory()
+    if root.is_symlink():
+        return
+    root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    destination = root / "last-audio-recovery.json"
+    if destination.is_symlink():
+        return
+    document = {"updated": time.time(), "pid": os.getpid(), "stage": stage,
+                "elapsed_seconds": round(max(0, float(elapsed)), 3), "reason": "audio_timeout"}
+    fd, temporary = tempfile.mkstemp(prefix=".audio-recovery-", dir=root)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(document, handle)
+        os.replace(temporary, destination)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)

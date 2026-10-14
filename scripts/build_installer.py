@@ -14,7 +14,8 @@ def build(appearance=False,hot_appearance=False):
  if work.exists():shutil.rmtree(work)
  payload=work/'payload';payload.mkdir(parents=True)
  frontend_info=plistlib.loads((APPS[0][0]/'Contents/Info.plist').read_bytes())
- package_version=f"{frontend_info['CFBundleShortVersionString']}.{frontend_info['CFBundleVersion']}"
+ release_info=json.loads((ROOT/'SOURCE_MANIFEST.json').read_text())
+ package_version=release_info.get('package_version', f"{frontend_info['CFBundleShortVersionString']}.{frontend_info['CFBundleVersion']}")
  for source,target,identity in (APPS[:2] if appearance else APPS):
   info=plistlib.loads((source/'Contents/Info.plist').read_bytes())
   if info['CFBundleIdentifier'] != identity:raise ValueError('Unexpected application identity')
@@ -56,7 +57,7 @@ def build(appearance=False,hot_appearance=False):
  if hot_appearance:
   distribution_text=distribution_text.replace('file="appearance.html"','file="hot-appearance.html"').replace('onConclusion="RequireLogout"','onConclusion="none"')
  distribution.write_text(distribution_text)
- release=json.loads((ROOT/'SOURCE_MANIFEST.json').read_text())['version']
+ release=release_info['version']
  output=ROOT/('dist/VoiceFly-HotLogo-0.2.0-arm64.pkg' if hot_appearance else 'dist/VoiceFly-Appearance-0.2.0-arm64.pkg' if appearance else f'dist/VoiceFly-{release}-arm64.pkg')
  run('productbuild','--distribution',distribution,'--resources',ROOT/'packaging/resources','--package-path',work,output)
  print(output)

@@ -6,26 +6,26 @@
 
 Voice Fly grew from daily use and sustained development with Codex. It combines Squirrel/Rime typing with local streaming speech recognition, so a user can type, hold Control to dictate, see text while speaking, and release to commit. Explicitly saved personal terms can inform both typing and speech.
 
-**Status: 0.2.0-preview.4 — complete installer preview.** A downloadable package now includes the input method, native settings, Python speech runtime and verified local model. It targets **M-series Macs running macOS 26.4+**; Intel and earlier macOS are not supported by this bundle. The installer uses local ad-hoc signing, without a paid Apple Developer ID or Apple notarization. An independent first-install trial is still pending.
+**Status: 0.2.0-preview.5 — complete installer preview.** A downloadable package now includes the input method, native settings, Python speech runtime and verified local model. It targets **M-series Macs running macOS 26.4+**; Intel and earlier macOS are not supported by this bundle. The installer uses local ad-hoc signing, without a paid Apple Developer ID or Apple notarization. An independent first-install trial is still pending.
 
 ## Download and install
 
-[Download the complete Apple Silicon installer](https://github.com/cobonlab/VoiceFly/releases/download/v0.2.0-preview.4/VoiceFly-0.2.0-preview.4-arm64.pkg) · [Release and checksums](https://github.com/cobonlab/VoiceFly/releases/tag/v0.2.0-preview.4) · [Installation steps / 安装说明](docs/INSTALL.md)
+[Download the complete Apple Silicon installer](https://github.com/cobonlab/VoiceFly/releases/download/v0.2.0-preview.5/VoiceFly-0.2.0-preview.5-arm64.pkg) · [Release and checksums](https://github.com/cobonlab/VoiceFly/releases/tag/v0.2.0-preview.5) · [Installation steps / 安装说明](docs/INSTALL.md)
 
 You do not need Python, Homebrew, a separate Squirrel installation, an OpenAI API key or an Apple developer membership. macOS may block this non-notarized preview: after trying to open it, check **System Settings → Privacy & Security → Open Anyway**. If updating an existing Voice Fly installation, finish dictation/typing and switch to ABC first. Save your work and log out/in manually after full installation; the installer will not log you out. Approve Voice Fly as an input method and allow Voice Fly Service to use the microphone.
 
 ## New in this preview
 
-- Prevent held Space from being mistaken for double/triple taps.
-- Improve deferred-Space submission and let host applications handle Left/Right directly when no composition is active.
-- Clear stale caret/selection records and correct the installer's desktop-session state checks.
-- Retain the complete installer, model, settings, six keyboard schemes and original badge.
+- Automatically recover the speech service if recording finalization or microphone shutdown stalls.
+- Deliver finalized text before microphone cleanup, while keeping the service busy until the device is released.
+- Record only the recovery stage and timing, without dictation content.
+- Retain preview.4's held-Space and cursor fixes, settings, six typing schemes and complete public model/runtime.
 
-63 Swift regressions and the native build passed. The update was installed on the maintainer's Mac; confirmation of all reported symptoms in Codex, Telegram, WeChat and web inputs remains pending. Single Space can still wait up to 0.55 seconds when Space learning is enabled.
+Local checks passed: 180 focused service/audio/text tests, 153 portable tests (152 passed, one skipped), and 63 Swift tests. An isolated launchd fault test proved process exit/restart with a new PID; packaged model and text diagnostics passed. Native CoreAudio faults can still occur; the new protection bounds the wait and requests service recovery. The held-Space learning design still permits a single-Space delay up to 0.55 seconds.
 
 <img src="docs/images/voicefly-menu-badge.png" width="220" alt="Voice Fly's approved white badge with dark microphone and wind lines on a dark background">
 
-The maintainer previously confirmed frontend build 26's native badge, Chinese typing and Control dictation on macOS 26.6.2 Apple Silicon without logout. The preceding installer was checked after extraction using temporary profiles and restricted processes; this maintenance release repeats package integrity and offline speech checks. Those checks do not replace an independent first installation and real microphone/host check. See the [release notes](docs/releases/0.2.0-preview.4.md).
+The maintainer previously confirmed frontend build 26's native badge, Chinese typing and Control dictation on macOS 26.6.2 Apple Silicon without logout. The preceding installer was checked after extraction using temporary profiles and restricted processes; this maintenance release repeats package integrity and offline speech checks. Those checks do not replace an independent first installation and real microphone/host check. See the [release notes](docs/releases/0.2.0-preview.5.md).
 
 ## Why this project exists
 

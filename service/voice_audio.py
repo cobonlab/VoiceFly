@@ -48,12 +48,8 @@ class ActiveInput:
     def close(self):
         try:
             self.stream.stop()
-        except Exception:
-            pass
-        try:
+        finally:
             self.stream.close()
-        except Exception:
-            pass
 
 
 class AdaptiveSpeechStartGate:

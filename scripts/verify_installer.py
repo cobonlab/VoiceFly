@@ -14,7 +14,7 @@ for app in apps:
   if p.is_symlink():
    symlinks+=1;assert p.resolve().is_relative_to(app.resolve()),p;assert p.exists(),p;continue
   if not p.is_file():continue
-  assert p.name not in ('personal_usage.json','voicefly_learned_phrases.txt','domain_dict.txt','direct_url.json'),p
+  assert p.name not in ('personal_usage.json','voicefly_learned_phrases.txt','domain_dict.txt','direct_url.json','service-status.json','last-audio-recovery.json'),p
   assert not any(x in p.parts for x in ('Backups','Logs','Caches','.git','.env')),p
   with p.open('rb') as f:m=f.read(4)
   if m not in magic:continue
